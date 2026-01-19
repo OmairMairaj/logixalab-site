@@ -185,5 +185,11 @@ All rights reserved by the JUTE Fashion team.
 
 ---
 
+## Developer
+
+**Developed by:** Mujtaba & Omair
+
+---
+
 Made with ❤️ for **JUTE Fashion**
 
