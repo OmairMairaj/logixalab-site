@@ -1,15 +1,18 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Michroma, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/app/components/Header";
+import SmoothScroll from "@/app/components/SmoothScroll";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const michroma = Michroma({
+  variable: "--font-michroma",
   subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata = {
@@ -21,11 +24,11 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${michroma.variable} min-h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans antialiased">
         <Header />
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

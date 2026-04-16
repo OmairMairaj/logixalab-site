@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+
+import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 
 const navLinks = [
   { label: "Services", href: "#services" },
@@ -15,28 +17,20 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="absolute inset-x-0 top-0 z-50 w-full">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-8 md:px-12 lg:px-16">
+    // no border or backdrop-blur-md and no background color keep it transparent and simple 
+    <header className="fixed inset-x-0 top-0 z-50 w-full "> 
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8 lg:px-10">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          {/* Double-V / W logomark */}
-          <svg
-            width="24"
-            height="18"
-            viewBox="0 0 24 18"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <polyline
-              points="1,1 6,16 12,4 18,16 23,1"
-              stroke="#aaff00"
-              strokeWidth="2.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </svg>
-          <span className="font-sans text-base font-semibold tracking-tight text-white">
+          <Image
+            src="/images/header-logo.svg"
+            alt=""
+            width={52}
+            height={51}
+            className="h-9 w-9 shrink-0 object-contain"
+            priority
+          />
+          <span className="font-heading text-base font-normal tracking-tight text-white">
             Logixa Lab
           </span>
         </Link>
@@ -47,21 +41,30 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-white/70 transition-colors hover:text-white"
+              className="text-sm font-medium text-white/70 transition-colors duration-300 ease-out hover:text-(--hero-accent) focus-visible:text-(--hero-accent) focus-visible:outline-none"
             >
-              {link.label}
+              <RandomLetterSwapPingPong
+                label={link.label}
+                className="text-inherit transition-colors duration-300 ease-out"
+                staggerDuration={0.025}
+              />
             </Link>
           ))}
         </nav>
 
-        {/* Desktop CTA */}
+        {/* Desktop CTA — sliding icon (Uiverse-style), mark = small-logo */}
         <div className="hidden md:flex">
-          <Link
-            href="#contact"
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#aaff00] px-5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-85"
-          >
-            <ArrowUpRight size={15} strokeWidth={2.5} />
-            Contact Us
+          <Link href="#contact" className="header-contact-btn">
+            <span className="header-contact-btn__icon" aria-hidden>
+              <Image
+                src="/images/small-logo.svg"
+                alt=""
+                width={26}
+                height={25}
+                className="header-contact-btn__icon-img"
+              />
+            </span>
+            <span className="relative z-1">Contact Us</span>
           </Link>
         </div>
 
@@ -108,25 +111,37 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="border-t border-white/10 bg-black/90 px-8 py-5 backdrop-blur-md md:hidden">
+        <div className="border-t border-white/10 bg-black/90 px-4 py-5 backdrop-blur-md md:hidden">
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="text-sm font-medium text-white/70 transition-colors hover:text-white"
+                className="text-sm font-medium text-white/70 transition-colors duration-300 ease-out hover:text-(--hero-accent) focus-visible:text-(--hero-accent) focus-visible:outline-none"
               >
-                {link.label}
+                <RandomLetterSwapPingPong
+                  label={link.label}
+                  className="text-inherit transition-colors duration-300 ease-out"
+                  staggerDuration={0.025}
+                />
               </Link>
             ))}
             <Link
               href="#contact"
               onClick={() => setMenuOpen(false)}
-              className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-full bg-[#aaff00] px-5 py-2 text-center text-sm font-semibold text-black"
+              className="header-contact-btn mt-2 w-full sm:w-auto"
             >
-              <ArrowUpRight size={15} strokeWidth={2.5} />
-              Contact Us
+              <span className="header-contact-btn__icon" aria-hidden>
+                <Image
+                  src="/images/small-logo.svg"
+                  alt=""
+                  width={26}
+                  height={25}
+                  className="header-contact-btn__icon-img"
+                />
+              </span>
+              <span className="relative z-1">Contact Us</span>
             </Link>
           </nav>
         </div>

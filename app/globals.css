@@ -3,13 +3,26 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Landing hero — tune to match Figma Dev Mode */
+  --hero-canvas: #121212;
+  --hero-accent: #ccff00;
+  --hero-copy-max: 22rem;
+  --hero-body-size: 0.9375rem;
+  --hero-display: clamp(2.5rem, 8vw, 7.5rem);
+
+  /* First paragraph block — Figma layout */
+  --hero-first-p-left: 28px;
+  --hero-first-p-top: 120px;
+  --hero-first-p-width: 452px;
+  --hero-first-p-height: 168px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-michroma), ui-sans-serif, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +32,100 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Lenis: document must grow with content; Tailwind h-full on <html> can fight lenis.css */
+html.lenis {
+  height: auto !important;
+}
+
+html.lenis body {
+  min-height: 100%;
+  height: auto;
+}
+
+@layer base {
+  html {
+    overflow-x: hidden;
+  }
+
+  body {
+    background: var(--hero-canvas);
+    color: #fafafa;
+    font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-michroma), ui-sans-serif, sans-serif;
+  }
+}
+
+/* Header Contact — Uiverse-style sliding icon (adamgiebl), themed to --hero-accent */
+@layer components {
+  .header-contact-btn {
+    background: var(--hero-accent);
+    color: var(--hero-canvas);
+    font-family: inherit;
+    padding: 0.35em 1.2em 0.35em 3.3em;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: 0.9em;
+    border: none;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: inset 0 0 1.2em -0.45em rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    position: relative;
+    height: 2.8em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: filter 0.2s ease;
+  }
+
+  .header-contact-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  .header-contact-btn__icon {
+    z-index: 1000;
+    background: #000000;
+    position: absolute;
+    left: 0.3em;
+    right: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.2em;
+    width: 2.2em;
+    border-radius: 0.7em;
+    box-shadow: 0.1em 0.1em 0.45em rgba(0, 0, 0, 0.18);
+    transition:
+      width 0.3s ease,
+      transform 0.15s ease;
+  }
+
+  .header-contact-btn:hover .header-contact-btn__icon {
+    width: calc(100% - 0.6em);
+  }
+
+  .header-contact-btn__icon-img {
+    width: 1.1em;
+    height: 1.1em;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+
+  .header-contact-btn:hover .header-contact-btn__icon-img {
+    transform: translateX(-0.1em);
+  }
+
+  .header-contact-btn:active .header-contact-btn__icon {
+    transform: translateY(-50%) scale(0.95);
+  }
 }

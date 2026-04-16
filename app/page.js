@@ -1,9 +1,9 @@
-import HeroSection from "@/app/sections/HeroSection";
+import LandingScrollExperience from "@/app/sections/LandingScrollExperience";
 
 export default function Home() {
   return (
-    <main>
-      <HeroSection />
+    <main className="overflow-x-hidden">
+      <LandingScrollExperience />
     </main>
   );
 }
