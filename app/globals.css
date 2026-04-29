@@ -48,7 +48,11 @@ html.lenis body {
   }
 
   body {
-    background: var(--hero-canvas);
+    background-color: var(--hero-canvas);
+    background-image: url("/images/Background.png");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     color: #fafafa;
     font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   }

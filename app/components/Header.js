@@ -23,16 +23,16 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/images/header-logo.svg"
+            src="/images/LogixaLab logo Final 1.png"
             alt=""
-            width={52}
-            height={51}
-            className="h-9 w-9 shrink-0 object-contain"
+            width={100}
+            height={100}
+            className="h-50 w-50 shrink-0 object-contain"
             priority
           />
-          <span className="font-heading text-base font-normal tracking-tight text-white">
+          {/* <span className="font-heading text-base font-normal tracking-tight text-white">
             Logixa Lab
-          </span>
+          </span> */}
         </Link>
 
         {/* Desktop nav */}
@@ -53,18 +53,18 @@ export default function Header() {
         </nav>
 
         {/* Desktop CTA — sliding icon (Uiverse-style), mark = small-logo */}
-        <div className="hidden md:flex">
-          <Link href="#contact" className="header-contact-btn">
-            <span className="header-contact-btn__icon" aria-hidden>
+        <div className="hidden md:flex rounded-full">
+          <Link href="#contact" className="header-contact-btn rounded-full">
+            <span className="header-contact-btn__icon rounded-full " aria-hidden >
               <Image
-                src="/images/small-logo.svg"
+                src="/images/Icon Gradient.png"
                 alt=""
                 width={26}
                 height={25}
-                className="header-contact-btn__icon-img"
+                className="header-contact-btn__icon-img rounded-full"
               />
             </span>
-            <span className="relative z-1">Contact Us</span>
+            <span className="relative z-1 rounded-full">Contact Us</span>
           </Link>
         </div>
 

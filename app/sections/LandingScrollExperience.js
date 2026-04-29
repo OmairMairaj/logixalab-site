@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import InteractiveDotGrid from "@/app/components/InteractiveDotGrid";
 import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -21,12 +20,9 @@ export default function LandingScrollExperience() {
   const scrollRootRef = useRef(null);
   const engineeringRef = useRef(null);
   const intelligenceRef = useRef(null);
-  const logoRef = useRef(null);
-  const solidLogoRef = useRef(null);
-  const dotsLogoRef = useRef(null);
   const heroBgLayerRef = useRef(null);
-  const bgAfterConvertRef = useRef(null);
-  const dotGridLayerRef = useRef(null);
+  const leftGlowRef = useRef(null);
+  const leftGlowUnderRightRef = useRef(null);
   const leftRailRef = useRef(null);
   const nextRailRef = useRef(null);
   const impactSmallRef = useRef(null);
@@ -39,12 +35,9 @@ export default function LandingScrollExperience() {
     const scrollRoot = scrollRootRef.current;
     const eng = engineeringRef.current;
     const intel = intelligenceRef.current;
-    const logo = logoRef.current;
-    const solidLogo = solidLogoRef.current;
-    const dotsLogo = dotsLogoRef.current;
     const heroBgLayer = heroBgLayerRef.current;
-    const bgAfterConvert = bgAfterConvertRef.current;
-    const dotGridLayer = dotGridLayerRef.current;
+    const leftGlow = leftGlowRef.current;
+    const leftGlowUnderRight = leftGlowUnderRightRef.current;
     const leftRail = leftRailRef.current;
     const nextRail = nextRailRef.current;
     const impactSmall = impactSmallRef.current;
@@ -56,12 +49,9 @@ export default function LandingScrollExperience() {
       !scrollRoot ||
       !eng ||
       !intel ||
-      !logo ||
-      !solidLogo ||
-      !dotsLogo ||
       !heroBgLayer ||
-      !bgAfterConvert ||
-      !dotGridLayer ||
+      !leftGlow ||
+      !leftGlowUnderRight ||
       !leftRail ||
       !nextRail ||
       !impactSmall ||
@@ -72,27 +62,9 @@ export default function LandingScrollExperience() {
     )
       return;
 
-    const yStart = () => window.innerHeight * 0.42;
-
     const ctx = gsap.context(() => {
-      gsap.set(logo, {
-        left: "50%",
-        top: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        y: yStart(),
-        scale: 1,
-      });
-      gsap.set(solidLogo, {
-        opacity: 1,
-        rotation: 0,
-        transformOrigin: "50% 50%",
-        force3D: true,
-      });
-      gsap.set(dotsLogo, { opacity: 0, rotation: 0 });
       gsap.set(heroBgLayer, { opacity: 1 });
-      gsap.set(bgAfterConvert, { opacity: 0 });
-      gsap.set(dotGridLayer, { opacity: 0 });
+      gsap.set(leftGlowUnderRight, { opacity: 0 });
       gsap.set(leftRail, { x: 0, opacity: 1 });
       /* Final layout position from the start; hidden until story beat (no slide-in). */
       gsap.set(nextRail, {
@@ -204,9 +176,6 @@ export default function LandingScrollExperience() {
       const settleHold = 0.22;
       const convertAt = phaseDur + settleHold;
       const convertDur = 0.32;
-      /** Degrees — only the solid big logo; dotted logo stays at 0°. */
-      const logoRotationEnd = -30;
-
       tl.to(eng, {
         x: exitXEng,
         ease: "none",
@@ -222,69 +191,9 @@ export default function LandingScrollExperience() {
             duration: phaseDur,
           },
           0,
-        )
-        .fromTo(
-          logo,
-          {
-            left: "50%",
-            top: "50%",
-            xPercent: -50,
-            yPercent: -50,
-            y: yStart,
-            scale: 1,
-            force3D: true,
-          },
-          {
-            left: "50%",
-            top: "50%",
-            xPercent: -50,
-            yPercent: -50,
-            y: 0,
-            scale: 0.9,
-            ease: "none",
-            force3D: true,
-            duration: phaseDur,
-          },
-          0,
-        )
-        .fromTo(
-          solidLogo,
-          { rotation: 0 },
-          {
-            rotation: logoRotationEnd,
-            ease: "none",
-            duration: phaseDur,
-            force3D: true,
-          },
-          0,
-        )
-        .to(
-          solidLogo,
-          { opacity: 0, ease: "none", duration: convertDur },
-          convertAt,
-        )
-        .to(
-          dotsLogo,
-          { opacity: 1, ease: "none", duration: convertDur },
-          convertAt,
-        )
-        .to(
-          heroBgLayer,
-          { opacity: 0, ease: "none", duration: convertDur },
-          convertAt,
-        )
-        .to(
-          bgAfterConvert,
-          { opacity: 1, ease: "none", duration: convertDur },
-          convertAt,
-        )
-        .to(
-          dotGridLayer,
-          { opacity: 1, ease: "none", duration: convertDur },
-          convertAt,
         );
 
-      /** Story phase: SVG dotted logo out; dot grid stays on; intro rail exits; next rail appears in place (full blur), then characters clear on scroll. */
+      /** Story phase: dot grid stays on; intro rail exits; next rail appears in place (full blur), then characters clear on scroll. */
       const storyPhaseStart = convertAt + convertDur;
       const storyDotsFade = 0.34;
       const storyRailExit = 0.42;
@@ -307,14 +216,22 @@ export default function LandingScrollExperience() {
       const charTweenDur = 0.16;
 
       tl.to(
-        dotsLogo,
-        { opacity: 0, ease: "none", duration: storyDotsFade },
-        storyPhaseStart,
-      )
+          leftGlow,
+          {
+            opacity: 0,
+            ease: "none",
+            duration: storyRailExit,
+          },
+          storyPhaseStart + 0.02,
+        )
         .to(
-          logo,
-          { opacity: 0, ease: "none", duration: storyDotsFade },
-          storyPhaseStart,
+          leftGlowUnderRight,
+          {
+            opacity: 0.42,
+            ease: "none",
+            duration: storyRailExit,
+          },
+          storyPhaseStart + 0.02,
         )
         .to(
           leftRail,
@@ -411,16 +328,6 @@ export default function LandingScrollExperience() {
           },
           impactStart,
         );
-
-      tl.to(
-        dotGridLayer,
-        {
-          opacity: 0,
-          ease: "none",
-          duration: impactRevealSpan,
-        },
-        impactRevealStart,
-      );
 
       if (impactChars.length) {
         tl.to(
@@ -568,19 +475,6 @@ export default function LandingScrollExperience() {
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
         <div ref={heroBgLayerRef} className="absolute inset-0 will-change-opacity">
           <Image
-            src="/images/hero-bg.jpg"
-            alt=""
-            fill
-            className="object-cover object-center"
-            priority
-            sizes="100vw"
-          />
-        </div>
-        <div
-          ref={bgAfterConvertRef}
-          className="absolute inset-0 will-change-opacity"
-        >
-          <Image
             src="/images/Background.png"
             alt=""
             fill
@@ -588,25 +482,40 @@ export default function LandingScrollExperience() {
             priority
             sizes="100vw"
           />
+          <div
+            ref={leftGlowRef}
+            className="absolute left-0 top-0 h-full w-[56vw] -translate-x-1/3"
+          >
+            <Image
+              src="/images/left.png"
+              alt=""
+              fill
+              className="object-contain object-left"
+              sizes="65vw"
+            />
+          </div>
+          <div
+            ref={leftGlowUnderRightRef}
+            className="absolute bottom-0 right-0 z-0 h-[88vh] w-[62vw] translate-x-[28%] translate-y-[22%] opacity-0"
+          >
+            <Image
+              src="/images/left.png"
+              alt=""
+              fill
+              className="object-contain object-bottom-right"
+              sizes="62vw"
+            />
+          </div>
+          <div className="absolute right-0 top-0 z-10 h-[92vh] w-[66vw] translate-x-[30%] -translate-y-[24%]">
+            <Image
+              src="/images/right.png"
+              alt=""
+              fill
+              className="object-contain object-top-right"
+              sizes="66vw"
+            />
+          </div>
         </div>
-      </div>
-
-      <div
-        ref={dotGridLayerRef}
-        className="pointer-events-none fixed inset-0 z-1 will-change-opacity"
-        aria-hidden
-      >
-        <InteractiveDotGrid
-          className="h-full w-full"
-          dotSpacing={16}
-          dotSize={2}
-          dotColor="rgba(255, 255, 255, 0.4)"
-          hoverDotColor="rgba(204, 255, 0, 0.85)"
-          distortionRadius={120}
-          distortionStrength={36}
-          animationSpeed={0.18}
-          useWindowPointer
-        />
       </div>
 
       <div ref={scrollRootRef} className="min-h-[920vh] w-full" aria-hidden />
@@ -643,46 +552,9 @@ export default function LandingScrollExperience() {
         </span>
       </div>
 
-      {/* Logo between Engineering (below) and Intelligence (above) in z-order */}
-      <div
-        ref={logoRef}
-        className="pointer-events-none fixed left-1/2 top-1/2 z-20 w-[min(100vw,900px)] max-w-[100vw] will-change-transform md:w-[min(96vw,1600px)] md:min-w-[380px]"
-      >
-        {/* 1010/905 matches hero-section-big-logo.svg viewBox so solid sits in frame; dotted uses same box for alignment */}
-        <div className="relative aspect-1010/905 w-full max-h-[min(82vh,1100px)] md:max-h-[min(92dvh,1200px)]">
-          <div
-            ref={solidLogoRef}
-            className="absolute inset-0 will-change-[opacity]"
-          >
-            <Image
-              src="/images/hero-section-big-logo.svg"
-              alt=""
-              fill
-              className="object-contain object-center"
-              priority
-              sizes="(max-width: 768px) 100vw, 1600px"
-              unoptimized
-            />
-          </div>
-          <div
-            ref={dotsLogoRef}
-            className="absolute inset-0 will-change-[opacity]"
-          >
-            <Image
-              src="/images/dotted-Logo.svg"
-              alt=""
-              fill
-              className="object-contain object-center"
-              sizes="(max-width: 768px) 100vw, 1600px"
-              unoptimized
-            />
-          </div>
-        </div>
-      </div>
-
       <aside
         ref={leftRailRef}
-        className="pointer-events-auto fixed left-4 top-20 z-45 w-[calc(100%-2rem)] max-w-[452px] will-change-transform md:left-(--hero-first-p-left) md:top-(--hero-first-p-top) md:w-(--hero-first-p-width)"
+        className="pointer-events-auto fixed right-4 top-24 z-45 w-[calc(100%-2rem)] max-w-[360px] text-left will-change-transform md:right-12 md:top-28"
       >
         <div
           className="leading-snug md:text-base"
@@ -691,17 +563,15 @@ export default function LandingScrollExperience() {
             fontSize: "var(--hero-body-size)",
           }}
         >
-          <p className="font-semibold text-white">
-            We approach design through logic, systems,
+          <p className="font-semibold text-white/92">
+            We Build the Software
             <br />
-            and human emotion.
+            That Runs Your Business
           </p>
-          <p className="mt-2 text-white/75">
-            Every detail we craft carries clarity, intention,
-            <br />
-            and quiet confidence. That&apos;s how we design
-            <br />
-            and build websites that work — and feel right.
+          <p className="mt-3 text-white/78">
+            From AI-powered automation to full-stack custom development -
+            Logixalab turns complex problems into clean, scalable digital
+            products.
           </p>
         </div>
         <Link
@@ -709,11 +579,11 @@ export default function LandingScrollExperience() {
           className="mt-3 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-(--hero-accent) transition-opacity hover:opacity-85 md:mt-4"
         >
           <Image
-            src="/images/small-logo.svg"
+            src="/images/Icon Gradient.png"
             alt=""
-            width={26}
-            height={25}
-            className="h-[18px] w-[18px] shrink-0 object-contain"
+            width={30}
+            height={30}
+            className="h-[25px] w-[25px] shrink-0 object-contain"
           />
           <RandomLetterSwapPingPong
             label="Start a New Project"
@@ -808,7 +678,7 @@ export default function LandingScrollExperience() {
                 className="relative mx-auto w-full max-w-[min(100%,400px)] overflow-hidden rounded-lg border border-white/15 bg-neutral-900/40 shadow-[0_24px_80px_rgba(0,0,0,0.45)] aspect-3/5 max-h-[min(72vh,680px)] sm:max-w-[min(100%,460px)]"
               >
                 <Image
-                  src="/images/hero-bg.jpg"
+                  src="/images/Background.png"
                   alt=""
                   fill
                   className="object-cover"
