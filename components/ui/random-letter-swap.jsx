@@ -4,6 +4,29 @@ import { useMemo, useState } from "react";
 import { motion, useAnimate } from "framer-motion";
 import debounce from "lodash/debounce";
 
+function deterministicShuffle(length, seedText) {
+  const indices = Array.from({ length }, (_, i) => i);
+  let seed = 2166136261;
+  for (let i = 0; i < seedText.length; i += 1) {
+    seed ^= seedText.charCodeAt(i);
+    seed = Math.imul(seed, 16777619);
+  }
+
+  const rand = () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  for (let i = indices.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  return indices;
+}
+
 export function RandomLetterSwapForward({
   label,
   reverse = true,
@@ -25,10 +48,7 @@ export function RandomLetterSwapForward({
   });
 
   const shuffledIndices = useMemo(
-    () =>
-      Array.from({ length: label.length }, (_, i) => i).sort(
-        () => Math.random() - 0.5,
-      ),
+    () => deterministicShuffle(label.length, `forward:${label}`),
     [label],
   );
 
@@ -127,10 +147,7 @@ export function RandomLetterSwapPingPong({
   });
 
   const shuffledIndices = useMemo(
-    () =>
-      Array.from({ length: label.length }, (_, i) => i).sort(
-        () => Math.random() - 0.5,
-      ),
+    () => deterministicShuffle(label.length, `pingpong:${label}`),
     [label],
   );
 

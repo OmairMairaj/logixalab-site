@@ -28,8 +28,15 @@ export default function LandingScrollExperience() {
   const impactSmallRef = useRef(null);
   const impactBigRef = useRef(null);
   const impactSplitRef = useRef(null);
-  const cardsStageRef = useRef(null);
-  const cardsRailRef = useRef(null);
+  const headingsBlockRef = useRef(null);
+  const centerImageRef = useRef(null);
+  const rightCopyRef = useRef(null);
+  const carouselStageRef = useRef(null);
+  const carouselRailRef = useRef(null);
+  const industryStageRef = useRef(null);
+  const industryHeadingRef = useRef(null);
+  const industryStatRef = useRef(null);
+  const industryCardsRef = useRef(null);
 
   useLayoutEffect(() => {
     const scrollRoot = scrollRootRef.current;
@@ -43,8 +50,15 @@ export default function LandingScrollExperience() {
     const impactSmall = impactSmallRef.current;
     const impactBig = impactBigRef.current;
     const impactSplit = impactSplitRef.current;
-    const cardsStage = cardsStageRef.current;
-    const cardsRail = cardsRailRef.current;
+    const headingsBlock = headingsBlockRef.current;
+    const centerImage = centerImageRef.current;
+    const rightCopy = rightCopyRef.current;
+    const carouselStage = carouselStageRef.current;
+    const carouselRail = carouselRailRef.current;
+    const industryStage = industryStageRef.current;
+    const industryHeading = industryHeadingRef.current;
+    const industryStat = industryStatRef.current;
+    const industryCards = industryCardsRef.current;
     if (
       !scrollRoot ||
       !eng ||
@@ -57,8 +71,15 @@ export default function LandingScrollExperience() {
       !impactSmall ||
       !impactBig ||
       !impactSplit ||
-      !cardsStage ||
-      !cardsRail
+      !headingsBlock ||
+      !centerImage ||
+      !rightCopy ||
+      !carouselStage ||
+      !carouselRail ||
+      !industryStage ||
+      !industryHeading ||
+      !industryStat ||
+      !industryCards
     )
       return;
 
@@ -85,74 +106,49 @@ export default function LandingScrollExperience() {
         textAlign: "left",
         force3D: true,
       });
-      const cardWraps = cardsRail.querySelectorAll("[data-carousel-wrap]");
-      const cardEls = cardsRail.querySelectorAll("[data-carousel-card]");
-      const leftCard = cardEls[0];
-      const centerCard = cardEls[1];
-      const rightCard = cardEls[2];
-      const centerWrap = cardWraps[1];
-      const leftWrap = cardWraps[0];
-      const rightWrap = cardWraps[2];
-      const cardTargetW = () =>
-        Math.min(600, Math.max(280, window.innerWidth * 0.42));
-      const cardWSnap = cardTargetW();
+      /* Headings block: starts centered (translate -50%/-50%), transformOrigin top-left so later scale shrinks into corner. */
+      gsap.set(headingsBlock, {
+        left: "50%",
+        top: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        scale: 1,
+        transformOrigin: "0% 0%",
+        force3D: true,
+      });
+      /* Center image: positioned at viewport center, hidden via scale 0 until phase 3c. */
+      gsap.set(centerImage, {
+        left: "50%",
+        top: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        scale: 0,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      });
+      /* Right paragraph: hidden until phase 3e. */
+      gsap.set(rightCopy, {
+        opacity: 0,
+        x: 30,
+        force3D: true,
+      });
+      /* Carousel stage: hidden + rail offset right until phase 3f. */
+      gsap.set(carouselStage, { autoAlpha: 0, pointerEvents: "none" });
+      gsap.set(carouselRail, { x: 0, force3D: true });
 
-      if (centerCard && centerWrap) {
-        /* Fixed column + scale inner card only — scaling the wrap reads as “from the left” in flex rows. */
-        gsap.set(centerWrap, {
-          width: cardTargetW(),
-          opacity: 1,
-          overflow: "visible",
+      /* Industry stage (Phase 4): heading off-left, stat hidden, cards below viewport. */
+      gsap.set(industryStage, { autoAlpha: 0, pointerEvents: "none" });
+      gsap.set(industryHeading, { x: -window.innerWidth * 0.6, force3D: true });
+      gsap.set(industryStat, { opacity: 0, x: 40, force3D: true });
+      const industryCardEls = industryCards.querySelectorAll("[data-industry-card]");
+      industryCardEls.forEach((card, i) => {
+        gsap.set(card, {
+          y: window.innerHeight * (1.05 + i * 0.15),
+          rotate: i % 2 === 0 ? -3 : 3,
+          opacity: 0,
           force3D: true,
         });
-        gsap.set(centerCard, {
-          scale: 0.2,
-          opacity: 1,
-          /* Bottom-aligned row: grow from center horizontally + base vertically (matches Figma stack). */
-          transformOrigin: "50% 100%",
-          force3D: true,
-        });
-      }
-      /* Inactive slides: ~65% size, dimmed — sit under center (z) per Figma. */
-      const sideScale = 0.66;
-      const sideOpacity = 0.48;
-      if (leftCard) {
-        gsap.set(leftCard, {
-          scale: sideScale,
-          opacity: sideOpacity,
-          transformOrigin: "50% 100%",
-          force3D: true,
-        });
-      }
-      if (rightCard) {
-        gsap.set(rightCard, {
-          scale: sideScale,
-          opacity: sideOpacity,
-          transformOrigin: "50% 100%",
-          force3D: true,
-        });
-      }
-      if (leftWrap) {
-        gsap.set(leftWrap, {
-          width: 0,
-          opacity: 1,
-          overflow: "visible",
-          marginRight: 0,
-        });
-      }
-      if (rightWrap) {
-        gsap.set(rightWrap, {
-          width: 0,
-          opacity: 1,
-          overflow: "visible",
-          marginLeft: 0,
-        });
-      }
-      /* Rail starts right so scrub moves left (incoming queue from right, past center toward left). */
-      const railStartX = Math.min(cardWSnap * 0.5, window.innerWidth * 0.2);
-      gsap.set(cardsRail, { x: railStartX, force3D: true });
-      /* Hidden until the impact line finishes — otherwise this layer sits above Engineering/Intelligence. */
-      gsap.set(cardsStage, { autoAlpha: 0, pointerEvents: "none" });
+      });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -347,109 +343,175 @@ export default function LandingScrollExperience() {
       }
 
       const impactRevealEnd = impactRevealStart + impactRevealSpan;
-      const cardPause = 0.14;
-      const cardScaleDur = 0.88;
-      const cardScaleStart = impactRevealEnd + cardPause;
-      const mergeStart = cardScaleStart + cardScaleDur;
-      const mergeDur = 0.55;
-      const carouselPause = 0.12;
-      const carouselStart = mergeStart + mergeDur + carouselPause;
-      const carouselDur = 1.15;
-      const gapPx = 32;
-
-      /* Scrub must interpolate two real lengths — not CSS clamp()/mixed keywords — or layout jumps. */
-      void impactSplit.offsetHeight;
-      const mergeSmallFs0 = window.getComputedStyle(impactSmall).fontSize;
-      const mergeBigFs0 = window.getComputedStyle(impactBig).fontSize;
-      const mergeBigMw0 = window.getComputedStyle(impactBig).maxWidth;
-      const mergeBigMwFrom =
-        !mergeBigMw0 || mergeBigMw0 === "none"
-          ? `${Math.ceil(impactBig.getBoundingClientRect().width)}px`
-          : mergeBigMw0;
+      /** Phase 3c — image scales up at center of "Real-World Impact". */
+      const phaseCStart = impactRevealEnd + 0.12;
+      const phaseCDur = 0.55;
+      /** Phase 3d — headings shrink + move to top-left. Image grows + sits as feature. */
+      const phaseDStart = phaseCStart + 0.32;
+      const phaseDDur = 0.7;
+      /** Phase 3e — right paragraph fades in. */
+      const phaseEStart = phaseDStart + 0.28;
+      const phaseEDur = 0.42;
+      /** Phase 3f — carousel rail scrolls horizontally. */
+      const phaseFStart = phaseEStart + 0.26;
+      const phaseFDur = 1.4;
 
       tl.to(
-        cardsStage,
+        centerImage,
+        {
+          scale: 1,
+          ease: "none",
+          duration: phaseCDur,
+        },
+        phaseCStart,
+      );
+
+      tl.to(
+        headingsBlock,
+        {
+          left: "5%",
+          top: "14%",
+          xPercent: 0,
+          yPercent: 0,
+          scale: 0.42,
+          ease: "none",
+          duration: phaseDDur,
+        },
+        phaseDStart,
+      );
+
+      tl.to(
+        centerImage,
+        {
+          scale: 1.45,
+          ease: "none",
+          duration: phaseDDur,
+        },
+        phaseDStart,
+      );
+
+      tl.to(
+        rightCopy,
+        {
+          opacity: 1,
+          x: 0,
+          ease: "none",
+          duration: phaseEDur,
+        },
+        phaseEStart,
+      );
+
+      tl.to(
+        carouselStage,
         {
           autoAlpha: 1,
           ease: "none",
-          duration: 0.08,
+          duration: 0.18,
         },
-        cardScaleStart,
+        phaseFStart - 0.08,
       );
 
-      if (centerCard) {
-        tl.to(
-          centerCard,
-          {
-            scale: 1,
-            transformOrigin: "50% 100%",
-            ease: "none",
-            duration: cardScaleDur,
-          },
-          cardScaleStart,
-        );
-      }
+      /* Carousel rail slides left, exposing more cards. Distance ≈ rail width minus 1 card. */
+      const railMoveDistance = () =>
+        Math.min(window.innerWidth * 1.4, 1280);
 
       tl.fromTo(
-        impactSmall,
-        { fontSize: mergeSmallFs0 },
+        carouselRail,
+        { x: 0 },
         {
-          fontSize: "0.8125rem",
+          x: () => -railMoveDistance(),
           ease: "none",
-          duration: mergeDur,
+          duration: phaseFDur,
         },
-        mergeStart,
+        phaseFStart,
       );
 
-      tl.fromTo(
-        impactBig,
+      /* Center image fades out as carousel takes over the visual focus. */
+      tl.to(
+        centerImage,
         {
-          fontSize: mergeBigFs0,
-          maxWidth: mergeBigMwFrom,
-        },
-        {
-          fontSize: "1.625rem",
-          maxWidth: "420px",
+          autoAlpha: 0,
           ease: "none",
-          duration: mergeDur,
+          duration: 0.4,
         },
-        mergeStart,
+        phaseFStart,
       );
 
-      if (leftWrap) {
-        tl.to(
-          leftWrap,
-          {
-            width: cardWSnap,
-            marginRight: gapPx / 2,
-            ease: "none",
-            duration: carouselDur * 0.45,
-          },
-          carouselStart,
-        );
-      }
-      if (rightWrap) {
-        tl.to(
-          rightWrap,
-          {
-            width: cardWSnap,
-            marginLeft: gapPx / 2,
-            ease: "none",
-            duration: carouselDur * 0.45,
-          },
-          carouselStart,
-        );
-      }
+      /** ───────── PHASE 4 — “AI for Every Industry” ───────── */
+      const phaseFEnd = phaseFStart + phaseFDur;
+      /** Phase 4a — old impact stage exits, industry stage takes over. */
+      const phaseGStart = phaseFEnd + 0.25;
+      const phaseGDur = 0.5;
+      /** Phase 4b — heading slides in from left. */
+      const phaseHStart = phaseGStart + 0.25;
+      const phaseHDur = 0.5;
+      /** Phase 4c — stat copy fades in (bottom-right). */
+      const phaseIStart = phaseHStart + 0.32;
+      const phaseIDur = 0.4;
+      /** Phase 4d — cards rise from bottom (staggered, scroll-driven). */
+      const phaseJStart = phaseIStart + phaseIDur + 0.15;
+      const phaseJDur = 1.6;
 
-      tl.fromTo(
-        cardsRail,
-        { x: railStartX },
+      /* Old impact stage fades out + industry stage fades in. */
+      tl.to(
+        impactSplit,
+        { autoAlpha: 0, ease: "none", duration: phaseGDur },
+        phaseGStart,
+      );
+      tl.to(
+        industryStage,
         {
-          x: -(cardWSnap + gapPx),
+          autoAlpha: 1,
+          pointerEvents: "auto",
           ease: "none",
-          duration: carouselDur,
+          duration: phaseGDur,
         },
-        carouselStart,
+        phaseGStart,
+      );
+
+      /* Heading slides in from off-left. */
+      tl.to(
+        industryHeading,
+        { x: 0, ease: "none", duration: phaseHDur },
+        phaseHStart,
+      );
+
+      /* Stat fades in. */
+      tl.to(
+        industryStat,
+        { opacity: 1, x: 0, ease: "none", duration: phaseIDur },
+        phaseIStart,
+      );
+
+      /* Cards rise from bottom one by one — scroll drives the stagger. */
+      industryCardEls.forEach((card, i) => {
+        const cardBaseY = -window.innerHeight * (0.04 + i * 0.02);
+        tl.to(
+          card,
+          {
+            y: cardBaseY,
+            rotate: i % 2 === 0 ? -2 : 2,
+            opacity: 1,
+            ease: "none",
+            duration: phaseJDur,
+          },
+          phaseJStart + i * 0.18,
+        );
+      });
+
+      /** Phase 4 outro — hero bg + industry stage fade out so Contact section reveals cleanly. */
+      const phaseJEnd = phaseJStart + phaseJDur;
+      const phaseOutroStart = phaseJEnd + 0.3;
+      const phaseOutroDur = 0.55;
+
+      tl.to(
+        [heroBgLayer, industryStage],
+        {
+          autoAlpha: 0,
+          ease: "none",
+          duration: phaseOutroDur,
+        },
+        phaseOutroStart,
       );
     }, scrollRoot);
 
@@ -518,7 +580,7 @@ export default function LandingScrollExperience() {
         </div>
       </div>
 
-      <div ref={scrollRootRef} className="min-h-[920vh] w-full" aria-hidden />
+      <div ref={scrollRootRef} className="min-h-[1240vh] w-full" aria-hidden />
 
       <h1 className="sr-only">
         Logixa Lab — Engineering and Intelligence. AI Solutions Built for
@@ -600,7 +662,7 @@ export default function LandingScrollExperience() {
         <div className="w-full max-w-[min(92vw,56rem)]">
           <p className="font-heading flex flex-wrap justify-start gap-x-[0.35em] gap-y-2 text-left text-balance text-[clamp(1.35rem,4.2vw,3rem)] font-semibold leading-[1.12] tracking-[-0.02em] text-(--hero-accent)">
             {(
-              "Forward-thinking AI solutions company dedicated to transforming businesses through intelligent technology."
+              "We're not a one-trick agency. Logixalab covers the full spectrum - from designing your brand to deploying your cloud infrastructure. Whatever your business needs to grow, we build it."
             )
               .split(/\s+/)
               .map((word, wi) => (
@@ -620,77 +682,165 @@ export default function LandingScrollExperience() {
         </div>
       </aside>
 
-      {/* Figma hero: left column = stacked headings; right = carousel; row vertically centered */}
+      {/* Impact stage — single fixed-canvas frame with absolute layers. */}
       <div
-        className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center px-5 py-10 md:px-10 md:py-12"
+        ref={impactSplitRef}
+        className="pointer-events-none fixed inset-0 z-40 overflow-hidden"
         aria-hidden
       >
+        {/* Headings block — animates from viewport center → top-left. */}
         <div
-          ref={impactSplitRef}
-          className="flex h-full w-full max-w-[min(100%,1800px)] flex-col items-stretch justify-center gap-10 md:flex-row md:items-center md:gap-8 lg:gap-14"
+          ref={headingsBlockRef}
+          className="absolute will-change-transform"
         >
-          <div className="relative z-20 flex min-h-0 min-w-0 flex-1 flex-col items-start justify-center gap-2 md:max-w-[min(48vw,36rem)] lg:max-w-[min(42rem,44%)]">
-            <p
-              ref={impactSmallRef}
-              className="relative max-w-[min(92vw,28rem)] font-sans text-[clamp(0.8125rem,1.35vw,1rem)] font-medium uppercase tracking-[0.12em] text-white/90"
-            >
-              AI Solutions Built for{" "}
-            </p>
-            <h2
-              ref={impactBigRef}
-              className="relative w-max max-w-full whitespace-nowrap text-left font-heading text-[clamp(1.75rem,min(8vw,7.5rem),6.75rem)] font-normal leading-[1.05] tracking-[-0.04em] text-white"
-              style={{
-                textShadow: "0 2px 48px rgba(0,0,0,0.45)",
-              }}
-            >
-              {"Real-World Impact".split("").map((char, i) => (
-                <span
-                  key={`im-${i}`}
-                  data-impact-char=""
-                  className="inline-block will-change-[filter,opacity]"
-                >
-                  {char === " " ? "\u00A0" : char}
-                </span>
-              ))}
-            </h2>
-          </div>
-
-          <div
-            ref={cardsStageRef}
-            className="relative z-0 flex min-h-[min(320px,42vh)] w-full min-w-0 flex-1 items-center justify-center overflow-visible md:min-h-0 md:justify-end opacity-0 invisible"
+          <p
+            ref={impactSmallRef}
+            className="font-sans text-[clamp(0.8125rem,1.35vw,1rem)] font-medium uppercase tracking-[0.12em] text-white/90"
           >
-            <div
-              ref={cardsRailRef}
-              className="flex w-max max-w-none items-end justify-end gap-0 will-change-transform"
-            >
-          {[
-            { pos: "25% 50%" },
-            { pos: "50% 40%" },
-            { pos: "72% 55%" },
-          ].map((crop, i) => (
-            <div
-              key={`carousel-${i}`}
-              data-carousel-wrap=""
-              className={`relative flex shrink-0 items-end justify-center overflow-visible ${i === 1 ? "z-30" : "z-10 -mx-1.5"}`}
-            >
-              <div
-                data-carousel-card=""
-                className="relative mx-auto w-full max-w-[min(100%,400px)] overflow-hidden rounded-lg border border-white/15 bg-neutral-900/40 shadow-[0_24px_80px_rgba(0,0,0,0.45)] aspect-3/5 max-h-[min(72vh,680px)] sm:max-w-[min(100%,460px)]"
+            AI Solutions Built for
+          </p>
+          <h2
+            ref={impactBigRef}
+            className="mt-1 whitespace-nowrap text-left font-heading text-[clamp(1.75rem,min(8vw,7.5rem),6.75rem)] font-normal leading-[1.05] tracking-[-0.04em] text-white"
+            style={{ textShadow: "0 2px 48px rgba(0,0,0,0.45)" }}
+          >
+            {"Real-World Impact".split("").map((char, i) => (
+              <span
+                key={`im-${i}`}
+                data-impact-char=""
+                className="inline-block will-change-[filter,opacity]"
               >
-                <Image
-                  src="/images/Background.png"
-                  alt=""
-                  fill
-                  className="object-cover"
-                  style={{ objectPosition: crop.pos }}
-                  sizes="(max-width: 768px) 90vw, 600px"
-                  priority={i === 1}
+                {char === " " ? "\u00A0" : char}
+              </span>
+            ))}
+          </h2>
+        </div>
+
+        {/* Center image — placeholder (scales from 0 → 1.45). */}
+        <div
+          ref={centerImageRef}
+          className="absolute will-change-transform"
+          style={{ width: "min(28vw,360px)", aspectRatio: "3/4" }}
+        >
+          <div className="h-full w-full rounded-md border border-dashed border-white/35 bg-linear-to-br from-neutral-600/55 via-neutral-800/70 to-black/85 shadow-[0_24px_80px_rgba(0,0,0,0.55)]" />
+        </div>
+
+        {/* Right paragraph — fades in after headings shrink. */}
+        <div
+          ref={rightCopyRef}
+          className="absolute right-[5%] top-[42%] w-[min(280px,30vw)] will-change-transform md:right-[6%]"
+        >
+          <p className="text-[14px] leading-relaxed text-white/85">
+            We&apos;ve seen what happens when businesses choose the wrong tech
+            partner. We built Logixalab to be the opposite of that.
+          </p>
+        </div>
+
+        {/* Carousel rail — horizontal scroll across 5 placeholder cards. */}
+        <div
+          ref={carouselStageRef}
+          className="absolute inset-x-0 bottom-[6%] flex items-end justify-center will-change-transform md:bottom-[8%]"
+        >
+          <div
+            ref={carouselRailRef}
+            className="flex items-end gap-6 will-change-transform"
+            style={{ paddingLeft: "30vw", paddingRight: "30vw" }}
+          >
+            {[
+              "from-blue-900/40 to-neutral-900/80",
+              "from-emerald-900/40 to-neutral-900/80",
+              "from-purple-900/40 to-neutral-900/80",
+              "from-amber-900/40 to-neutral-900/80",
+              "from-rose-900/40 to-neutral-900/80",
+            ].map((tint, i) => (
+              <div
+                key={`carousel-card-${i}`}
+                className="shrink-0 will-change-transform"
+                style={{ width: "min(28vw,340px)", aspectRatio: "3/4" }}
+              >
+                <div
+                  className={`h-full w-full rounded-md border border-dashed border-white/30 bg-linear-to-br ${tint} shadow-[0_24px_80px_rgba(0,0,0,0.5)]`}
                 />
               </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* PHASE 4 — “AI for Every Industry” stage. */}
+      <div
+        ref={industryStageRef}
+        className="pointer-events-none fixed inset-0 z-40 overflow-hidden"
+        aria-hidden
+      >
+        {/* Heading — top-left */}
+        <h2
+          ref={industryHeadingRef}
+          className="absolute left-[5%] top-[18%] font-heading text-[clamp(2rem,7vw,5rem)] font-normal leading-[1.05] tracking-[-0.04em] text-white will-change-transform md:left-[6%] md:top-[20%]"
+          style={{ textShadow: "0 2px 48px rgba(0,0,0,0.45)" }}
+        >
+          AI for Every
+          <br />
+          Industry
+        </h2>
+
+        {/* Stat copy — bottom-right */}
+        <p
+          ref={industryStatRef}
+          className="absolute bottom-[12%] right-[5%] w-[min(280px,32vw)] text-[14px] leading-relaxed text-white/85 will-change-transform md:right-[6%]"
+        >
+          <span className="font-semibold tracking-wide text-white">
+            LOGIXA LAB
+          </span>{" "}
+          helped us automate 60% of our operations and improve decision accuracy
+          by 40%.
+        </p>
+
+        {/* Card cluster — placeholders rise from bottom */}
+        <div ref={industryCardsRef} className="absolute inset-0">
+          {[
+            {
+              left: "12%",
+              top: "26%",
+              w: "min(22vw,260px)",
+              tint: "from-sky-700/40 via-neutral-800/70 to-black/85",
+            },
+            {
+              right: "22%",
+              top: "32%",
+              w: "min(22vw,260px)",
+              tint: "from-amber-700/35 via-neutral-800/70 to-black/85",
+            },
+            {
+              left: "38%",
+              top: "20%",
+              w: "min(20vw,240px)",
+              tint: "from-emerald-700/35 via-neutral-800/70 to-black/85",
+            },
+            {
+              right: "8%",
+              top: "16%",
+              w: "min(20vw,240px)",
+              tint: "from-rose-700/35 via-neutral-800/70 to-black/85",
+            },
+          ].map((card, i) => (
+            <div
+              key={`industry-card-${i}`}
+              data-industry-card
+              className="absolute will-change-transform"
+              style={{
+                left: card.left,
+                right: card.right,
+                top: card.top,
+                width: card.w,
+                aspectRatio: "3/4",
+              }}
+            >
+              <div
+                className={`h-full w-full rounded-md border border-dashed border-white/30 bg-linear-to-br ${card.tint} shadow-[0_24px_80px_rgba(0,0,0,0.55)]`}
+              />
             </div>
           ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
