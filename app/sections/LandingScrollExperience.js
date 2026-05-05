@@ -637,7 +637,7 @@ export default function LandingScrollExperience() {
           </p>
         </div>
         <Link
-          href="#contact"
+          href="/contact"
           className="mt-3 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-(--hero-accent) transition-opacity hover:opacity-85 md:mt-4"
         >
           <Image

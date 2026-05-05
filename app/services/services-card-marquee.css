@@ -1,0 +1,24 @@
+/* Full-card FlowingMenu-style marquee (see https://reactbits.dev/components/flowing-menu) */
+
+.service-card-flowing__marquee.marquee {
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.service-card-flowing__content {
+  z-index: 2;
+}
+
+.service-card-flowing__part.marquee__part span {
+  text-transform: none;
+  font-weight: 600;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  letter-spacing: -0.02em;
+}
+
+.service-card-flowing__img.marquee__img {
+  width: min(100px, 18vw);
+  height: 2.5rem;
+  margin: 0.35em 1.25vw;
+  padding: 0.2em 0;
+}

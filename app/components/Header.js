@@ -7,7 +7,7 @@ import Link from "next/link";
 import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 
 const navLinks = [
-  { label: "Services", href: "/#services" },
+  { label: "Services", href: "/services" },
   { label: "Work", href: "/#work" },
   { label: "Team", href: "/team" },
   { label: "Blog", href: "/#blog" },
@@ -54,7 +54,7 @@ export default function Header() {
 
         {/* Desktop CTA — sliding icon (Uiverse-style), mark = small-logo */}
         <div className="hidden md:flex rounded-full">
-          <Link href="#contact" className="header-contact-btn rounded-full">
+          <Link href="/contact" className="header-contact-btn rounded-full">
             <span className="header-contact-btn__icon rounded-full " aria-hidden >
               <Image
                 src="/images/Icon Gradient.png"
@@ -64,7 +64,7 @@ export default function Header() {
                 className="header-contact-btn__icon-img rounded-full"
               />
             </span>
-            <span className="relative z-1 rounded-full">Contact Us</span>
+            <span className="relative z-1 rounded-full">Let&apos;s Talk</span>
           </Link>
         </div>
 
@@ -128,20 +128,20 @@ export default function Header() {
               </Link>
             ))}
             <Link
-              href="#contact"
+              href="/contact"
               onClick={() => setMenuOpen(false)}
               className="header-contact-btn mt-2 w-full sm:w-auto"
             >
               <span className="header-contact-btn__icon" aria-hidden>
                 <Image
-                  src="/images/small-logo.svg"
+                  src="/images/Icon Gradient.png"
                   alt=""
                   width={26}
                   height={25}
                   className="header-contact-btn__icon-img"
                 />
               </span>
-              <span className="relative z-1">Contact Us</span>
+              <span className="relative z-1">Let&apos;s Talk</span>
             </Link>
           </nav>
         </div>

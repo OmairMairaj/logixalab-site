@@ -5,7 +5,7 @@ import Link from "next/link";
 import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 
 const navLinks = [
-  { label: "Services", href: "/#services" },
+  { label: "Services", href: "/services" },
   { label: "Work", href: "/#work" },
   { label: "Team", href: "/team" },
   { label: "Blog", href: "/#blog" },
