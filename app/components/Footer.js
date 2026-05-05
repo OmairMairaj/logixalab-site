@@ -6,7 +6,7 @@ import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 
 const navLinks = [
   { label: "Services", href: "/services" },
-  { label: "Work", href: "/#work" },
+  { label: "Work", href: "/work" },
   { label: "Team", href: "/team" },
   { label: "Blog", href: "/#blog" },
 ];
@@ -34,10 +34,10 @@ function FooterColumnHeading({ children }) {
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 bg-[#0b0b0b] text-white">
-      <div className="mx-auto w-full max-w-7xl px-5 pt-20 pb-10 md:px-10 md:pt-24 md:pb-12">
+    <footer className="relative z-10 border-t border-white/10 bg-[#0b0b0b] text-white">
+      <div className="mx-auto w-full max-w-7xl px-5 pt-16 pb-8 md:px-10 md:pt-20 md:pb-10">
         {/* Top: 3 columns */}
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-6">
           {/* Contact */}
           <div className="md:col-span-3 md:col-start-1">
             <FooterColumnHeading>Contact</FooterColumnHeading>
@@ -49,7 +49,7 @@ export default function Footer() {
               info@logixalab.com
             </a>
 
-            <ul className="mt-7 flex flex-col gap-3">
+            <ul className="mt-5 flex flex-col gap-2">
               {socialLinks.map((s) => (
                 <li key={s.label}>
                   <a
@@ -73,7 +73,7 @@ export default function Footer() {
           <div className="md:col-span-3 md:col-start-5">
             <FooterColumnHeading>Navigation</FooterColumnHeading>
 
-            <ul className="mt-4 flex flex-col gap-3">
+            <ul className="mt-4 flex flex-col gap-2">
               {navLinks.map((l) => (
                 <li key={l.href}>
                   <Link
@@ -105,15 +105,15 @@ export default function Footer() {
         </div>
 
         {/* Big wordmark + legal column */}
-        <div className="mt-20 flex items-start justify-between gap-6 md:mt-24 md:gap-10">
+        <div className="mt-12 flex flex-col items-start gap-6 sm:flex-row sm:justify-between md:mt-14 md:gap-8">
           <h2
             className="font-sans font-light leading-[0.85] tracking-[-0.04em] text-white"
-            style={{ fontSize: "clamp(2rem, 17vw, 10rem)" }}
+            style={{ fontSize: "clamp(1.75rem, 14vw, 7.5rem)" }}
           >
             Logixa Lab
           </h2>
 
-          <ul className="flex shrink-0 flex-col gap-3 pt-2 text-right md:pt-3">
+          <ul className="flex shrink-0 flex-col gap-2 pt-0 text-left sm:pt-1 sm:text-right md:gap-2.5 md:pt-2">
             {legalLinks.map((l) => (
               <li key={l.href}>
                 <Link
@@ -128,7 +128,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <p className="mt-15 max-w-68 text-xs leading-snug text-(--hero-accent)">
+        <p className="mt-8 max-w-68 text-xs leading-snug text-(--hero-accent) md:mt-10">
           Copyrights @ Logixalab All Rights Reserved
         </p>
       </div>

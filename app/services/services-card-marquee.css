@@ -22,3 +22,15 @@
   margin: 0.35em 1.25vw;
   padding: 0.2em 0;
 }
+
+@media (max-width: 767px) {
+  .service-card-flowing__part.marquee__part span {
+    font-size: clamp(0.9rem, 5vw, 1.15rem);
+  }
+
+  .service-card-flowing__img.marquee__img {
+    width: 3.5rem;
+    height: 2rem;
+    margin-inline: 0.85rem;
+  }
+}

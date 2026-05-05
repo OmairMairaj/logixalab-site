@@ -8,7 +8,7 @@ import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 
 const navLinks = [
   { label: "Services", href: "/services" },
-  { label: "Work", href: "/#work" },
+  { label: "Work", href: "/work" },
   { label: "Team", href: "/team" },
   { label: "Blog", href: "/#blog" },
 ];
@@ -18,16 +18,16 @@ export default function Header() {
 
   return (
     // no border or backdrop-blur-md and no background color keep it transparent and simple 
-    <header className="fixed inset-x-0 top-0 z-50 w-full "> 
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8 lg:px-10">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+    <header className="fixed inset-x-0 top-0 z-50 w-full">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between overflow-hidden px-4 sm:px-5 md:px-8 lg:px-10">
+        {/* Logo — bar height is h-16; keep logo constrained so it cannot paint over page/footer below */}
+        <Link href="/" className="flex h-full max-h-16 shrink-0 items-center gap-2 py-1">
           <Image
             src="/images/LogixaLab logo Final 1.png"
-            alt=""
-            width={100}
-            height={100}
-            className="h-50 w-50 shrink-0 object-contain"
+            alt="Logixa Lab"
+            width={200}
+            height={56}
+            className="h-9 w-auto max-w-[118px] shrink-0 object-contain md:h-10 md:max-w-[132px]"
             priority
           />
           {/* <span className="font-heading text-base font-normal tracking-tight text-white">
@@ -111,8 +111,8 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="border-t border-white/10 bg-black/90 px-4 py-5 backdrop-blur-md md:hidden">
-          <nav className="flex flex-col gap-4">
+        <div className="fixed inset-x-0 top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/10 bg-black/92 px-4 py-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-md md:hidden">
+          <nav className="mx-auto flex max-w-7xl flex-col gap-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}

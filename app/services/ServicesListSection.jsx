@@ -1,54 +1,17 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import ServiceCardWithMarquee from "@/app/services/ServiceCardWithMarquee";
+import { SERVICES } from "@/app/services/servicesData";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const MARQUEE_IMAGE = "/images/Icon Gradient.png";
-
-const SERVICES = [
-  {
-    index: "01",
-    title: "AI Agents & Automation",
-    description:
-      "Automate repetitive workflows and deploy intelligent agents that work 24/7 across your operations.",
-  },
-  {
-    index: "02",
-    title: "AI SaaS Products",
-    description:
-      "Ship subscription-ready AI products with billing, onboarding, and analytics built for scale.",
-  },
-  {
-    index: "03",
-    title: "Custom Software Development",
-    description:
-      "End-to-end web and backend systems tailored to your stack, security model, and growth roadmap.",
-  },
-  {
-    index: "04",
-    title: "Data & ML Engineering",
-    description:
-      "Pipelines, feature stores, and model lifecycle tooling so your teams can train, evaluate, and deploy with confidence.",
-  },
-  {
-    index: "05",
-    title: "Cloud & DevOps",
-    description:
-      "Infrastructure as code, observability, and resilient deployments on AWS, GCP, or hybrid environments.",
-  },
-  {
-    index: "06",
-    title: "Product Design & UX",
-    description:
-      "Research, design systems, and interfaces that make complex AI capabilities feel simple for end users.",
-  },
-];
 
 function useCenteredCardIndex(cardRefs, listLength) {
   const [centeredIndex, setCenteredIndex] = useState(0);
@@ -101,38 +64,74 @@ function useCenteredCardIndex(cardRefs, listLength) {
 export default function ServicesListSection() {
   const sectionRef = useRef(null);
   const cardsRef = useRef([]);
+  const pathname = usePathname();
   const centeredIndex = useCenteredCardIndex(cardsRef, SERVICES.length);
+
+  /** Lenis + client navigations: ST positions are wrong until refresh. */
+  useEffect(() => {
+    if (pathname !== "/services") return undefined;
+    const id = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [pathname]);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
     if (!section) return undefined;
 
-    const cards = cardsRef.current.filter(Boolean);
-    if (cards.length === 0) return undefined;
+    let ctx;
+    let cancelled = false;
+    let rafId = 0;
+    let attempts = 0;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        cards,
-        { y: 80, autoAlpha: 0 },
-        {
-          y: 0,
-          autoAlpha: 1,
-          duration: 0.75,
-          ease: "power3.out",
-          stagger: 0.1,
-          scrollTrigger: {
-            trigger: section,
-            start: "top 82%",
-            toggleActions: "play none none none",
-          },
-          onComplete: () => {
-            ScrollTrigger.refresh();
-          },
-        }
-      );
-    }, section);
+    const trySetup = () => {
+      if (cancelled) return;
+      attempts += 1;
+      const cards = cardsRef.current.filter(Boolean);
+      if (cards.length < SERVICES.length && attempts < 40) {
+        rafId = window.requestAnimationFrame(trySetup);
+        return;
+      }
+      if (cards.length === 0) return;
 
-    return () => ctx.revert();
+      ctx = gsap.context(() => {
+        /* Don’t use autoAlpha:0 — if ST/Lenis misses a tick (SPA nav), cards stay visible. */
+        gsap.fromTo(
+          cards,
+          { y: 48 },
+          {
+            y: 0,
+            duration: 0.75,
+            ease: "power3.out",
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: section,
+              start: "top 90%",
+              toggleActions: "play none none none",
+              invalidateOnRefresh: true,
+            },
+            onComplete: () => {
+              ScrollTrigger.refresh();
+            },
+          }
+        );
+      }, section);
+
+      window.requestAnimationFrame(() => {
+        if (!cancelled) ScrollTrigger.refresh();
+      });
+    };
+
+    trySetup();
+
+    return () => {
+      cancelled = true;
+      if (rafId) window.cancelAnimationFrame(rafId);
+      ctx?.revert();
+    };
   }, []);
 
   return (
@@ -150,12 +149,13 @@ export default function ServicesListSection() {
           {SERVICES.map((item, i) => {
             const dimmed = centeredIndex !== i;
             return (
-              <li key={item.index}>
+              <li key={item.slug}>
                 <ServiceCardWithMarquee
                   ref={(el) => {
                     cardsRef.current[i] = el;
                   }}
                   item={item}
+                  serviceHref={`/services/${item.slug}`}
                   dimmed={dimmed}
                   marqueeImage={MARQUEE_IMAGE}
                   speed={18}

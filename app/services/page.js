@@ -12,14 +12,16 @@ export const metadata = {
 
 export default function ServicesPage() {
   return (
-    <main className="relative overflow-x-hidden text-white">
-      <ServicesPageBackdrop />
-      <div className="relative z-10">
-        <ServicesHero />
-        <ServicesListSection />
-        <ContactSection />
-        <Footer />
-      </div>
-    </main>
+    <>
+      <main className="relative overflow-x-hidden text-white">
+        <ServicesPageBackdrop />
+        <div className="relative z-10">
+          <ServicesHero />
+          <ServicesListSection />
+          <ContactSection />
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }

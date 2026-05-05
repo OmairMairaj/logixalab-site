@@ -24,7 +24,7 @@ const findClosestEdge = (mouseX, mouseY, width, height) => {
 };
 
 const ServiceCardWithMarquee = forwardRef(function ServiceCardWithMarquee(
-  { item, dimmed, marqueeImage, speed = 18 },
+  { item, serviceHref, dimmed, marqueeImage, speed = 18 },
   ref
 ) {
   const itemRef = useRef(null);
@@ -114,11 +114,13 @@ const ServiceCardWithMarquee = forwardRef(function ServiceCardWithMarquee(
   const hideStaticCopy = hovered;
 
   return (
-    <div
+    <Link
+      href={serviceHref}
       ref={setCardNode}
+      aria-label={`${title} — view service details`}
       className={clsx(
-        "service-card-flowing relative select-none overflow-hidden rounded-2xl border border-white/12 bg-black/28 shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-md transition-opacity duration-300 md:rounded-3xl",
-        dimmed ? "opacity-45" : "opacity-100"
+        "service-card-flowing relative block select-none overflow-hidden rounded-2xl border border-white/12 bg-black/28 shadow-[0_12px_48px_rgba(0,0,0,0.35)] backdrop-blur-md outline-none transition-opacity duration-300 focus-visible:ring-2 focus-visible:ring-(--hero-accent) focus-visible:ring-offset-2 focus-visible:ring-offset-black/80 md:rounded-3xl",
+        dimmed ? "opacity-75 md:opacity-45" : "opacity-100"
       )}
       onMouseEnter={(e) => {
         setHovered(true);
@@ -149,11 +151,11 @@ const ServiceCardWithMarquee = forwardRef(function ServiceCardWithMarquee(
         </div>
       </div>
 
-      <div className="service-card-flowing__content relative z-10 grid grid-cols-1 items-center gap-4 p-6 md:grid-cols-[minmax(2.5rem,auto)_minmax(0,1.05fr)_minmax(0,1.35fr)_auto] md:gap-6 md:p-8 lg:gap-8">
+      <div className="service-card-flowing__content relative z-10 grid grid-cols-1 items-start gap-3 p-4 sm:p-5 md:grid-cols-[minmax(2.5rem,auto)_minmax(0,1.05fr)_minmax(0,1.35fr)_auto] md:items-center md:gap-6 md:p-8 lg:gap-8">
         <span
           aria-hidden={hideStaticCopy}
           className={clsx(
-            "font-heading text-[clamp(1.75rem,4vw,2.75rem)] font-normal tabular-nums leading-none tracking-tight transition-[opacity,visibility] duration-200 ease-out md:text-right",
+            "font-heading text-[clamp(1.5rem,9vw,2.75rem)] font-normal tabular-nums leading-none tracking-tight transition-[opacity,visibility] duration-200 ease-out md:text-right",
             dimmed ? "text-white/25" : "text-white/90",
             hideStaticCopy && "pointer-events-none invisible opacity-0"
           )}
@@ -164,7 +166,7 @@ const ServiceCardWithMarquee = forwardRef(function ServiceCardWithMarquee(
         <h3
           aria-hidden={hideStaticCopy}
           className={clsx(
-            "m-0 font-heading text-[clamp(1rem,2.2vw,1.35rem)] font-semibold leading-snug tracking-tight text-white transition-[opacity,visibility] duration-200 ease-out",
+            "m-0 font-heading text-[clamp(0.95rem,4.8vw,1.35rem)] font-semibold leading-snug tracking-tight text-white transition-[opacity,visibility] duration-200 ease-out",
             hideStaticCopy && "pointer-events-none invisible opacity-0"
           )}
         >
@@ -181,12 +183,10 @@ const ServiceCardWithMarquee = forwardRef(function ServiceCardWithMarquee(
           {description}
         </p>
 
-        <Link
-          href="/contact"
+        <span
           aria-hidden={hideStaticCopy}
-          tabIndex={hideStaticCopy ? -1 : undefined}
           className={clsx(
-            "relative z-20 inline-flex w-fit shrink-0 items-center gap-2 text-sm font-semibold text-(--hero-accent) outline-none transition-[opacity,visibility] duration-200 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-(--hero-accent) focus-visible:ring-offset-2 focus-visible:ring-offset-black/80 md:justify-self-end",
+            "relative z-20 inline-flex w-fit shrink-0 items-center gap-2 text-sm font-semibold text-(--hero-accent) transition-[opacity,visibility] duration-200 ease-out md:justify-self-end",
             hideStaticCopy && "pointer-events-none invisible opacity-0"
           )}
         >
@@ -197,10 +197,10 @@ const ServiceCardWithMarquee = forwardRef(function ServiceCardWithMarquee(
             height={28}
             className="h-6 w-6 shrink-0 object-contain"
           />
-          Start a New Project
-        </Link>
+          View service
+        </span>
       </div>
-    </div>
+    </Link>
   );
 });
 

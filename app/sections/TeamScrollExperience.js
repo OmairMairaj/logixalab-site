@@ -273,14 +273,14 @@ export default function TeamScrollExperience() {
       >
         <div
           ref={railRef}
-          className="flex items-center gap-5 will-change-transform md:gap-7"
-          style={{ paddingLeft: "100vw", paddingRight: "30vw" }}
+          className="flex items-center gap-4 will-change-transform md:gap-7"
+          style={{ paddingLeft: "100vw", paddingRight: "max(40vw, 8rem)" }}
         >
           {TEAM.map((member) => (
             <article
               key={member.name}
               className="shrink-0 rounded-2xl border border-white/12 bg-black/25 p-2.5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm"
-              style={{ width: "min(28vw, 320px)" }}
+              style={{ width: "clamp(220px, 72vw, 320px)" }}
             >
               <div
                 className="relative overflow-hidden rounded-xl bg-linear-to-b from-neutral-700/30 via-neutral-900/60 to-black/85"

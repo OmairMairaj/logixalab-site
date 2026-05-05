@@ -720,7 +720,7 @@ export default function LandingScrollExperience() {
         <div
           ref={centerImageRef}
           className="absolute will-change-transform"
-          style={{ width: "min(28vw,360px)", aspectRatio: "3/4" }}
+          style={{ width: "clamp(180px, 48vw, 360px)", aspectRatio: "3/4" }}
         >
           <div className="h-full w-full rounded-md border border-dashed border-white/35 bg-linear-to-br from-neutral-600/55 via-neutral-800/70 to-black/85 shadow-[0_24px_80px_rgba(0,0,0,0.55)]" />
         </div>
@@ -728,7 +728,7 @@ export default function LandingScrollExperience() {
         {/* Right paragraph — fades in after headings shrink. */}
         <div
           ref={rightCopyRef}
-          className="absolute right-[5%] top-[42%] w-[min(280px,30vw)] will-change-transform md:right-[6%]"
+          className="absolute right-[5%] top-[42%] w-[min(280px,78vw)] will-change-transform md:right-[6%] md:w-[min(280px,30vw)]"
         >
           <p className="text-[14px] leading-relaxed text-white/85">
             We&apos;ve seen what happens when businesses choose the wrong tech
@@ -756,7 +756,7 @@ export default function LandingScrollExperience() {
               <div
                 key={`carousel-card-${i}`}
                 className="shrink-0 will-change-transform"
-                style={{ width: "min(28vw,340px)", aspectRatio: "3/4" }}
+                style={{ width: "clamp(180px, 55vw, 340px)", aspectRatio: "3/4" }}
               >
                 <div
                   className={`h-full w-full rounded-md border border-dashed border-white/30 bg-linear-to-br ${tint} shadow-[0_24px_80px_rgba(0,0,0,0.5)]`}
@@ -787,7 +787,7 @@ export default function LandingScrollExperience() {
         {/* Stat copy — bottom-right */}
         <p
           ref={industryStatRef}
-          className="absolute bottom-[12%] right-[5%] w-[min(280px,32vw)] text-[14px] leading-relaxed text-white/85 will-change-transform md:right-[6%]"
+          className="absolute bottom-[12%] right-[5%] w-[min(280px,78vw)] text-[14px] leading-relaxed text-white/85 will-change-transform md:right-[6%] md:w-[min(280px,32vw)]"
         >
           <span className="font-semibold tracking-wide text-white">
             LOGIXA LAB
@@ -802,25 +802,25 @@ export default function LandingScrollExperience() {
             {
               left: "12%",
               top: "26%",
-              w: "min(22vw,260px)",
+              w: "clamp(150px, 42vw, 260px)",
               tint: "from-sky-700/40 via-neutral-800/70 to-black/85",
             },
             {
               right: "22%",
               top: "32%",
-              w: "min(22vw,260px)",
+              w: "clamp(150px, 42vw, 260px)",
               tint: "from-amber-700/35 via-neutral-800/70 to-black/85",
             },
             {
               left: "38%",
               top: "20%",
-              w: "min(20vw,240px)",
+              w: "clamp(140px, 38vw, 240px)",
               tint: "from-emerald-700/35 via-neutral-800/70 to-black/85",
             },
             {
               right: "8%",
               top: "16%",
-              w: "min(20vw,240px)",
+              w: "clamp(140px, 38vw, 240px)",
               tint: "from-rose-700/35 via-neutral-800/70 to-black/85",
             },
           ].map((card, i) => (
