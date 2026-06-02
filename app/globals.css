@@ -49,7 +49,7 @@ html.lenis body {
 
   body {
     background-color: var(--hero-canvas);
-    background-image: url("/images/Background.png");
+    background-image: url("/images/background.png");
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;

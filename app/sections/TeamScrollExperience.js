@@ -205,7 +205,7 @@ export default function TeamScrollExperience() {
           className="absolute inset-0 will-change-opacity"
         >
           <Image
-            src="/images/Background.png"
+            src="/images/background.png"
             alt=""
             fill
             className="object-cover object-center"

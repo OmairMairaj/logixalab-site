@@ -6,7 +6,7 @@ import Link from "next/link";
 import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,9 +18,30 @@ gsap.registerPlugin(ScrollTrigger);
  */
 export default function LandingScrollExperience() {
   const scrollRootRef = useRef(null);
-  const engineeringRef = useRef(null);
-  const intelligenceRef = useRef(null);
+  const heroH1Ref = useRef(null);
+  const heroCenterRef = useRef(null);
+  const robotLayerRef = useRef(null);
   const heroBgLayerRef = useRef(null);
+
+  const handleMouseMove = useCallback((e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const gradient = `radial-gradient(circle 220px at ${x}px ${y}px, black 30%, transparent 80%)`;
+    if (robotLayerRef.current) {
+      robotLayerRef.current.style.maskImage = gradient;
+      robotLayerRef.current.style.webkitMaskImage = gradient;
+    }
+  }, []);
+
+  const handleMouseEnter = useCallback(() => {
+    if (robotLayerRef.current) robotLayerRef.current.style.opacity = "1";
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (robotLayerRef.current) robotLayerRef.current.style.opacity = "0";
+  }, []);
+
   const leftGlowRef = useRef(null);
   const leftGlowUnderRightRef = useRef(null);
   const leftRailRef = useRef(null);
@@ -40,8 +61,8 @@ export default function LandingScrollExperience() {
 
   useLayoutEffect(() => {
     const scrollRoot = scrollRootRef.current;
-    const eng = engineeringRef.current;
-    const intel = intelligenceRef.current;
+    const heroH1 = heroH1Ref.current;
+    const heroCenter = heroCenterRef.current;
     const heroBgLayer = heroBgLayerRef.current;
     const leftGlow = leftGlowRef.current;
     const leftGlowUnderRight = leftGlowUnderRightRef.current;
@@ -61,8 +82,8 @@ export default function LandingScrollExperience() {
     const industryCards = industryCardsRef.current;
     if (
       !scrollRoot ||
-      !eng ||
-      !intel ||
+      !heroH1 ||
+      !heroCenter ||
       !heroBgLayer ||
       !leftGlow ||
       !leftGlowUnderRight ||
@@ -155,39 +176,26 @@ export default function LandingScrollExperience() {
           trigger: scrollRoot,
           start: "top top",
           end: "bottom bottom",
-          /* ~0.9s scrub lag fights Lenis and reads as “glitchy”; keep a short smoothing window. */
+          /* ~0.9s scrub lag fights Lenis and reads as "glitchy"; keep a short smoothing window. */
           scrub: 0.2,
           invalidateOnRefresh: true,
         },
       });
 
-      // Move fully off-screen: fixed −55vw was often < full word width (leftover “g” at edge).
-      const exitXEng = () =>
-        -((eng.offsetWidth || window.innerWidth) + window.innerWidth * 0.15);
-      const exitXIntel = () =>
-        (intel.offsetWidth || window.innerWidth) + window.innerWidth * 0.15;
-
       const phaseDur = 1;
-      /** Extra timeline after the big logo reaches y/scale end — keeps it parked before swap. */
       const settleHold = 0.22;
       const convertAt = phaseDur + settleHold;
       const convertDur = 0.32;
-      tl.to(eng, {
-        x: exitXEng,
-        ease: "none",
-        force3D: true,
-        duration: phaseDur,
-      })
-        .to(
-          intel,
-          {
-            x: exitXIntel,
-            ease: "none",
-            force3D: true,
-            duration: phaseDur,
-          },
-          0,
-        );
+      tl.to(
+        [heroH1, heroCenter],
+        {
+          opacity: 0,
+          ease: "none",
+          force3D: true,
+          duration: phaseDur,
+        },
+        0,
+      );
 
       /** Story phase: dot grid stays on; intro rail exits; next rail appears in place (full blur), then characters clear on scroll. */
       const storyPhaseStart = convertAt + convertDur;
@@ -195,7 +203,7 @@ export default function LandingScrollExperience() {
       const storyRailExit = 0.42;
       /** When the lime block is visible: settled in layout, 100% blurred — no horizontal slide. */
       const paragraphInPlaceAt = storyPhaseStart + storyDotsFade + 0.04;
-      /** Scroll segment after “full blur in position” before characters begin to sharpen. */
+      /** Scroll segment after "full blur in position" before characters begin to sharpen. */
       const blurHoldBeforeChars = 0.24;
       const charRevealStart = paragraphInPlaceAt + blurHoldBeforeChars;
 
@@ -437,7 +445,7 @@ export default function LandingScrollExperience() {
         phaseFStart,
       );
 
-      /** ───────── PHASE 4 — “AI for Every Industry” ───────── */
+      /** ───────── PHASE 4 — "AI for Every Industry" ───────── */
       const phaseFEnd = phaseFStart + phaseFDur;
       /** Phase 4a — old impact stage exits, industry stage takes over. */
       const phaseGStart = phaseFEnd + 0.25;
@@ -527,17 +535,12 @@ export default function LandingScrollExperience() {
     };
   }, []);
 
-  const displayStyle = {
-    fontSize: "var(--hero-display)",
-    textShadow: "0 2px 40px rgba(0,0,0,0.5)",
-  };
-
   return (
     <div className="relative overflow-x-clip bg-(--hero-canvas) text-white">
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
         <div ref={heroBgLayerRef} className="absolute inset-0 will-change-opacity">
           <Image
-            src="/images/Background.png"
+            src="/images/background.png"
             alt=""
             fill
             className="object-cover object-center"
@@ -583,62 +586,75 @@ export default function LandingScrollExperience() {
       <div ref={scrollRootRef} className="min-h-[1240vh] w-full" aria-hidden />
 
       <h1 className="sr-only">
-        Logixa Lab — Engineering and Intelligence. AI Solutions Built for
-        Real-World Impact.
+        Logixa Lab — Trusted Engineering. Creative Precision. AI Solutions Built
+        for Real-World Impact.
       </h1>
 
-      {/* z: Engineering 10 — logo 20 — Intelligence 30 */}
+      {/* Hero heading — left side */}
       <div
-        ref={engineeringRef}
-        className="pointer-events-none fixed left-0 top-[65%] z-10 min-w-0 max-w-[min(96vw,58%)] -translate-y-1/2 overflow-x-clip px-2 will-change-transform md:max-w-[70%] md:px-4 lg:px-6"
-        style={{ fontSize: "var(--hero-display)" }}
+        ref={heroH1Ref}
+        className="pointer-events-none fixed left-[5%] top-1/2 z-20 w-[min(40vw,420px)] -translate-y-1/2 will-change-[opacity,transform] md:left-[6%]"
       >
-        <span
-          className="font-heading inline-block max-w-7xl wrap-break-word font-normal leading-[1.05] tracking-[-0.04em] text-white"
-          style={displayStyle}
+        <h2
+          className="font-heading text-[clamp(1.8rem,4.6vw,4.25rem)] font-normal leading-[1.08] tracking-[-0.03em] text-white"
+          style={{ textShadow: "0 2px 40px rgba(0,0,0,0.5)" }}
         >
-          Engineering
-        </span>
+          Trusted Engineering.
+          <br />
+          Creative Precision.
+        </h2>
       </div>
 
+      {/* Center hero portrait — female with robot hover-reveal */}
       <div
-        ref={intelligenceRef}
-        className="pointer-events-none fixed right-0 top-[76%] z-30 flex min-w-0 max-w-[min(96vw,58%)] -translate-y-1/2 justify-end overflow-x-clip px-2 will-change-transform md:top-[80%] md:max-w-[70%] md:px-4 lg:px-6"
-        style={{ fontSize: "var(--hero-display)" }}
+        ref={heroCenterRef}
+        className="pointer-events-auto fixed inset-y-0 left-1/2 z-20 -translate-x-1/2 will-change-[opacity,transform]"
+        style={{ width: "clamp(560px, 88vw, 1160px)" }}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-        <span
-          className="font-heading inline-block max-w-full wrap-break-word text-right font-normal leading-[1.05] tracking-[-0.04em] text-white"
-          style={displayStyle}
+        <Image
+          src="/images/hero-female.png"
+          alt="LogixaLab — Trusted Engineering"
+          fill
+          className="object-contain object-bottom"
+          priority
+          sizes="(max-width: 768px) 80vw, 44vw"
+        />
+        <div
+          ref={robotLayerRef}
+          className="absolute inset-0"
+          style={{ opacity: 0, transition: "opacity 0.3s ease" }}
         >
-          Intelligence
-        </span>
+          <Image
+            src="/images/hero-robot.png"
+            alt=""
+            fill
+            className="object-contain object-bottom"
+            sizes="(max-width: 768px) 80vw, 44vw"
+            aria-hidden
+          />
+        </div>
       </div>
 
+      {/* Right copy — exits leftward in story phase */}
       <aside
         ref={leftRailRef}
-        className="pointer-events-auto fixed right-4 top-24 z-45 w-[calc(100%-2rem)] max-w-[360px] text-left will-change-transform md:right-12 md:top-28"
+        className="pointer-events-auto fixed right-[5%] top-1/2 z-45 w-[min(280px,78vw)] -translate-y-1/2 text-left will-change-transform md:right-[6%]"
       >
-        <div
-          className="leading-snug md:text-base"
-          style={{
-            width: "100%",
-            fontSize: "var(--hero-body-size)",
-          }}
-        >
-          <p className="font-semibold text-white/92">
-            We Build the Software
-            <br />
-            That Runs Your Business
-          </p>
-          <p className="mt-3 text-white/78">
-            From AI-powered automation to full-stack custom development -
-            Logixalab turns complex problems into clean, scalable digital
-            products.
-          </p>
-        </div>
+        <p className="text-[13px] leading-relaxed text-white/85">
+          LogixaLab builds enterprise platforms, AI systems, cloud
+          infrastructure, and digital experiences designed to perform under
+          real-world pressure.
+        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-white/85">
+          From AI-powered automation to large-scale platform engineering, every
+          solution is built in-house by one integrated team.
+        </p>
         <Link
           href="/contact"
-          className="mt-3 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-(--hero-accent) transition-opacity hover:opacity-85 md:mt-4"
+          className="mt-4 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-(--hero-accent) transition-opacity hover:opacity-85"
         >
           <Image
             src="/images/Icon Gradient.png"
@@ -767,7 +783,7 @@ export default function LandingScrollExperience() {
         </div>
       </div>
 
-      {/* PHASE 4 — “AI for Every Industry” stage. */}
+      {/* PHASE 4 — "AI for Every Industry" stage. */}
       <div
         ref={industryStageRef}
         className="pointer-events-none fixed inset-0 z-40 overflow-hidden"
