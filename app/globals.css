@@ -4,18 +4,29 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Landing hero — tune to match Figma Dev Mode */
+  /* Landing hero */
   --hero-canvas: #121212;
+  --section-canvas: #0c0c0c;
   --hero-accent: #ccff00;
   --hero-copy-max: 22rem;
   --hero-body-size: 0.9375rem;
   --hero-display: clamp(2.5rem, 8vw, 7.5rem);
 
-  /* First paragraph block — Figma layout */
-  --hero-first-p-left: 28px;
-  --hero-first-p-top: 120px;
-  --hero-first-p-width: 452px;
-  --hero-first-p-height: 168px;
+  /* ─── Fluid layout tokens ───────────────────────────────────────────
+     Everything between min and max scales linearly with viewport width.
+     No breakpoint jumps — smooth at every screen size.              */
+  --gutter:    clamp(1rem, 5vw, 5rem);          /* horizontal page margin  */
+  --content-max: 1600px;                        /* shared max content width, gutter-anchored */
+  --header-h:  clamp(4rem, 5vw, 5rem);          /* header bar height       */
+  --header-offset: calc(0.5rem + var(--header-h)); /* fixed header top-2 + bar */
+  --viewport-below-header: calc(100dvh - var(--header-offset));
+
+  /* Fluid type scale */
+  --text-2xs:  clamp(0.65rem,  0.75vw, 0.75rem);
+  --text-xs:   clamp(0.75rem,  0.9vw,  0.875rem);
+  --text-sm:   clamp(0.8125rem,1vw,    0.9375rem);
+  --text-base: clamp(0.9375rem,1.2vw,  1.0625rem);
+  --text-lg:   clamp(1.125rem, 1.8vw,  1.5rem);
 }
 
 @theme inline {
@@ -29,6 +40,27 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+  }
+}
+
+/* Core Capabilities — gentle float for the active capability visual */
+@keyframes cap-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.cap-float {
+  animation: cap-float 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cap-float {
+    animation: none;
   }
 }
 
@@ -48,11 +80,9 @@ html.lenis body {
   }
 
   body {
+    /* Flat dark canvas — the bright green burst lives inside HeroSection only,
+       so sections below the hero sit on the dark background (matches Figma). */
     background-color: var(--hero-canvas);
-    background-image: url("/images/background.png");
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
     color: #fafafa;
     font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   }
@@ -67,14 +97,15 @@ html.lenis body {
   }
 }
 
-/* Header Contact — Uiverse-style sliding icon (adamgiebl), themed to --hero-accent */
+/* Header CTA — icon on right, dark sweep expands right-to-left on hover */
 @layer components {
   .header-contact-btn {
     background: var(--hero-accent);
     color: var(--hero-canvas);
     font-family: inherit;
-    padding: 0.35em 1.2em 0.35em 3.3em;
-    font-size: 0.9375rem;
+    /* right padding reserves space for the icon */
+    padding: 0.35em 3.3em 0.35em 1.2em;
+    font-size: var(--text-sm);
     font-weight: 600;
     border-radius: 0.9em;
     border: none;
@@ -84,36 +115,40 @@ html.lenis body {
     box-shadow: inset 0 0 1.2em -0.45em rgba(0, 0, 0, 0.35);
     overflow: hidden;
     position: relative;
-    height: 2.8em;
+    height: clamp(2.75rem, 3.5vw, 3.25rem);
     cursor: pointer;
     text-decoration: none;
-    transition: filter 0.2s ease;
+    transition: color 0.28s ease;
+    gap: 0.5em;
   }
 
+  /* when dark icon fully covers the button the text should read on dark */
   .header-contact-btn:hover {
-    filter: brightness(1.05);
+    color: var(--hero-accent);
   }
 
+  /* dark icon pill — anchored to the RIGHT */
   .header-contact-btn__icon {
-    z-index: 1000;
+    z-index: 10;
     background: #000000;
     position: absolute;
-    left: 0.3em;
-    right: auto;
+    right: 0.3em;
+    left: auto;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 2.2em;
-    width: 2.2em;
-    border-radius: 0.7em;
-    box-shadow: 0.1em 0.1em 0.45em rgba(0, 0, 0, 0.18);
+    height: 2.4em;
+    width: 2.4em;
+    border-radius: 0.6em;
+    box-shadow: -0.1em 0.1em 0.45em rgba(0, 0, 0, 0.18);
     transition:
-      width 0.3s ease,
+      width 0.38s cubic-bezier(0.4, 0, 0.2, 1),
       transform 0.15s ease;
   }
 
+  /* sweeps LEFT, covering the text (anchored to right so width grows leftward) */
   .header-contact-btn:hover .header-contact-btn__icon {
     width: calc(100% - 0.6em);
   }
@@ -126,10 +161,79 @@ html.lenis body {
   }
 
   .header-contact-btn:hover .header-contact-btn__icon-img {
-    transform: translateX(-0.1em);
+    transform: translateX(0.1em);
   }
 
   .header-contact-btn:active .header-contact-btn__icon {
     transform: translateY(-50%) scale(0.95);
+  }
+
+}
+
+/* Desktop header CTA — white pill, lime-green flood from icon on hover */
+@layer components {
+  .header-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    height: clamp(2.75rem, 3.5vw, 3.25rem);
+    padding: 0 1.4em;
+    border-radius: 9999px;
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    text-decoration: none;
+    color: #121212;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.38s ease, border-color 0.38s ease;
+  }
+
+  /* Lime-green panel starts hidden to the right (behind the icon),
+     then sweeps left across the entire pill on hover */
+  .header-cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hero-accent);
+    transform: translateX(101%);
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  .header-cta:hover::after {
+    transform: translateX(0);
+  }
+
+  .header-cta:hover {
+    border-color: var(--hero-accent);
+    box-shadow: 0 4px 22px rgba(204, 255, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Text and icon sit above the flood layer */
+  .header-cta span,
+  .header-cta img {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Icon spins 360° with a spring bounce — the visual trigger for the flood */
+  .header-cta img {
+    transition: transform 0.48s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .header-cta:hover img {
+    transform: rotate(360deg) scale(1.18);
+  }
+
+  .header-cta:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
   }
 }
