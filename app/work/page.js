@@ -4,7 +4,7 @@ import WorkPageBackdrop from "@/app/work/WorkPageBackdrop";
 import WorkProjectShowcase from "@/app/work/WorkProjectShowcase";
 
 export const metadata = {
-  title: "Work — Logixa Lab",
+  title: "Work",
   description:
     "Portfolio of engineering, design, and intelligent systems from Logixa Lab.",
 };

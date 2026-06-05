@@ -5,7 +5,7 @@ import ServicesShowcase from "@/app/services/ServicesShowcase";
 import ServicesPageBackdrop from "@/app/services/ServicesPageBackdrop";
 
 export const metadata = {
-  title: "Services — Logixa Lab",
+  title: "Services",
   description:
     "AI solutions designed to scale your business. Enterprise platforms, AI & automation, mobile, design, cloud, and data — engineered in-house by Logixa Lab.",
 };

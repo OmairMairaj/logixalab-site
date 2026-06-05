@@ -3,7 +3,7 @@ import ContactSection from "@/app/sections/ContactSection";
 import Footer from "@/app/components/Footer";
 
 export const metadata = {
-  title: "Team — Logixa Lab",
+  title: "Team",
   description:
     "Meet the engineers, designers and AI specialists behind Logixa Lab.",
 };
