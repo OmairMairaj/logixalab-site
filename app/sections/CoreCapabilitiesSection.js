@@ -51,6 +51,7 @@ export default function CoreCapabilitiesSection() {
   const buttonRef = useRef(null);
   const patternRef = useRef(null);
   const imageWrapRef = useRef(null);
+  const cardParallaxRef = useRef(null);
   const rowRefs = useRef([]);
 
   const [scrollIndex, setScrollIndex] = useState(0);
@@ -59,15 +60,17 @@ export default function CoreCapabilitiesSection() {
 
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current;
+    const panel = panelRef.current;
     const heading = headingRef.current;
     const button = buttonRef.current;
     const pattern = patternRef.current;
     const imageWrap = imageWrapRef.current;
     const rows = rowRefs.current.filter(Boolean);
-    if (!wrapper || !heading || !button || rows.length === 0) return undefined;
+    if (!wrapper || !panel || !heading || !button || rows.length === 0) return undefined;
 
     const N = CAPABILITIES.length;
-    const CYCLE_END = 0.6;
+    const CYCLE_START = 0.24;
+    const CYCLE_END = 0.72;
 
     const mm = gsap.matchMedia();
 
@@ -76,6 +79,37 @@ export default function CoreCapabilitiesSection() {
     mm.add(
       "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
       () => {
+        /* Entrance parallax — while the section rises from the viewport bottom
+           into its pin, the deep binary pattern and the floating card drift at a
+           slower depth rate than the normally-scrolling heading/rows. Separate
+           scroll range from the main timeline (which starts at "top top"), so the
+           yPercent here never collides with the exit's autoAlpha fade. */
+        const card = cardParallaxRef.current;
+        if (pattern || card) {
+          const parallax = gsap.timeline({
+            scrollTrigger: {
+              trigger: wrapper,
+              start: "top bottom",
+              end: "top top",
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          });
+          if (pattern) {
+            parallax.fromTo(pattern, { yPercent: 22 }, { yPercent: -12, ease: "none" }, 0);
+          }
+          if (card) {
+            parallax.fromTo(card, { yPercent: 12 }, { yPercent: -4, ease: "none" }, 0);
+          }
+        }
+
+        /* Phase 0 — gray panel crossfades in over pinned Intro (seam matches Delivery). */
+        gsap.set(panel, { autoAlpha: 0 });
+        gsap.set(heading, { autoAlpha: 0, x: -50, filter: "blur(10px)" });
+        gsap.set(button, { autoAlpha: 0, y: 20 });
+        gsap.set(rows, { autoAlpha: 0, y: 24 });
+        gsap.set([pattern, imageWrap].filter(Boolean), { autoAlpha: 0 });
+
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: wrapper,
@@ -84,15 +118,47 @@ export default function CoreCapabilitiesSection() {
             scrub: 0.4,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
-              const cp = Math.min(1, self.progress / CYCLE_END);
+              if (self.progress < CYCLE_START) return;
+              const cp = Math.min(
+                1,
+                (self.progress - CYCLE_START) / (CYCLE_END - CYCLE_START),
+              );
               const idx = Math.min(N - 1, Math.floor(cp * N));
               setScrollIndex((prev) => (prev !== idx ? idx : prev));
             },
           },
         });
 
-        /* Exit (last ~40% of travel): rows fly out alternately L/R, heading +
-           button lift away, pattern + floating image fade — just before release. */
+        tl.to(panel, { autoAlpha: 1, ease: "power1.out", duration: 0.12 }, 0);
+        tl.to(
+          heading,
+          {
+            autoAlpha: 1,
+            x: 0,
+            filter: "blur(0px)",
+            ease: "power2.out",
+            duration: 0.14,
+          },
+          0.12,
+        );
+        tl.to(button, { autoAlpha: 1, y: 0, ease: "power2.out", duration: 0.12 }, 0.14);
+        tl.to(
+          rows,
+          { autoAlpha: 1, y: 0, ease: "power2.out", duration: 0.14, stagger: 0.02 },
+          0.16,
+        );
+        tl.to(
+          [pattern, imageWrap].filter(Boolean),
+          { autoAlpha: 1, ease: "power2.out", duration: 0.12 },
+          0.18,
+        );
+
+        /* Exit (compact, at the very end of travel): the content stays on screen
+           until close to the seam, then rows fly out alternately L/R, heading +
+           button lift away, pattern + image fade — so the section never sits
+           empty-and-black before Tools below pins. */
+        const EXIT_AT = 0.78;
+
         rows.forEach((row, i) => {
           tl.to(
             row,
@@ -100,10 +166,10 @@ export default function CoreCapabilitiesSection() {
               x: i % 2 === 0 ? () => window.innerWidth * 0.7 : () => -window.innerWidth * 0.7,
               autoAlpha: 0,
               ease: "power2.in",
-              duration: 0.26,
+              duration: 0.16,
               force3D: true,
             },
-            CYCLE_END + i * 0.035,
+            EXIT_AT + i * 0.018,
           );
         });
 
@@ -113,11 +179,11 @@ export default function CoreCapabilitiesSection() {
             y: -90,
             autoAlpha: 0,
             ease: "power2.in",
-            duration: 0.3,
-            stagger: 0.05,
+            duration: 0.18,
+            stagger: 0.04,
             force3D: true,
           },
-          CYCLE_END + 0.08,
+          EXIT_AT + 0.04,
         );
 
         tl.to(
@@ -125,9 +191,20 @@ export default function CoreCapabilitiesSection() {
           {
             autoAlpha: 0,
             ease: "none",
-            duration: 0.3,
+            duration: 0.2,
           },
-          CYCLE_END,
+          EXIT_AT,
+        );
+
+        /* Once the content has flown out, fade the whole gray section away to
+           reveal the Tools section pinned behind it (Tools sits one z-layer
+           below with -mt-[100vh], same reveal pattern as Hero→Intro). The gray
+           dissolving to Tools' black is the seam — no empty hold, and Tools'
+           scan/chips are already streaming in underneath as it clears. */
+        tl.to(
+          wrapper,
+          { autoAlpha: 0, ease: "power1.inOut", duration: 0.12 },
+          EXIT_AT + 0.1,
         );
       },
     );
@@ -147,7 +224,7 @@ export default function CoreCapabilitiesSection() {
   return (
     <section
       ref={wrapperRef}
-      className="relative z-10 bg-[#2F2F2F] md:h-[400vh] pt-36"
+      className="relative z-20 bg-[#0C0C0C] md:-mt-[100vh] md:h-[400vh]"
       aria-labelledby="capabilities-heading"
     >
       <div
@@ -169,11 +246,17 @@ export default function CoreCapabilitiesSection() {
           />
         </div>
 
-        {/* Floating per-capability preview — absolute glass card, cross-fades with the active row */}
+        {/* Floating per-capability preview — absolute glass card, cross-fades with the active row.
+            Outer wrapper owns positioning + the entrance parallax transform; inner keeps the
+            centering + cap-float so they don't collide. */}
+        <div
+          ref={cardParallaxRef}
+          className="pointer-events-none absolute left-(--gutter) left-1/9 top-[65%] z-10 hidden w-[min(46vw,560px)] md:block"
+          aria-hidden
+        >
         <div
           ref={imageWrapRef}
-          className="pointer-events-none absolute left-(--gutter) left-1/9 top-[65%] z-10 hidden aspect-[4/3] w-[min(46vw,560px)] -translate-y-1/2 cap-float md:block"
-          aria-hidden
+          className="aspect-[4/3] -translate-y-1/2 cap-float"
         >
           <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] shadow-[0_20px_60px_rgba(0,0,0,0.45),0_0_50px_rgba(204,255,0,0.15)] backdrop-blur-xl">
             <div className="relative h-full w-full overflow-hidden rounded-xl">
@@ -194,6 +277,7 @@ export default function CoreCapabilitiesSection() {
               ))}
             </div>
           </div>
+        </div>
         </div>
 
         <div className="relative z-10 grid w-full grid-cols-1 gap-[clamp(2rem,5vh,3rem)] md:h-full md:max-h-full md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] md:items-stretch md:gap-[clamp(2rem,4vw,3.5rem)]">

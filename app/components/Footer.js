@@ -34,8 +34,8 @@ function FooterColumnHeading({ children }) {
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 border-t border-white/10 bg-[#0b0b0b] text-white">
-      <div className="mx-auto w-full max-w-7xl px-5 pt-16 pb-8 md:px-10 md:pt-20 md:pb-10">
+    <footer className="relative z-10 h-full overflow-hidden rounded-t-3xl border-t border-white/10 bg-[#0b0b0b] text-white shadow-[0_-24px_60px_rgba(0,0,0,0.55)] md:flex md:flex-col md:justify-center">
+      <div className="mx-auto w-full px-(--gutter) pt-16 pb-8 md:pt-4 md:pb-4">
         {/* Top: 3 columns */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-6">
           {/* Contact */}
@@ -70,7 +70,7 @@ export default function Footer() {
           </div>
 
           {/* Navigation */}
-          <div className="md:col-span-3 md:col-start-5">
+          <div className="md:col-span-3 md:col-start-4">
             <FooterColumnHeading>Navigation</FooterColumnHeading>
 
             <ul className="mt-4 flex flex-col gap-2">
@@ -92,10 +92,10 @@ export default function Footer() {
           </div>
 
           {/* Lab's Note */}
-          <div className="md:col-span-4 md:col-start-9">
+          <div className="md:col-span-3 md:col-start-10">
             <FooterColumnHeading>Lab&apos;s Note</FooterColumnHeading>
 
-            <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-white/75">
+            <p className="mt-4 text-sm leading-relaxed text-white/75">
               This space brings together work we&apos;ve done and work
               we&apos;re currently doing, along with conversations that
               continue beyond individual projects. If it feels right, this can
@@ -105,15 +105,15 @@ export default function Footer() {
         </div>
 
         {/* Big wordmark + legal column */}
-        <div className="mt-12 flex flex-col items-start gap-6 sm:flex-row sm:justify-between md:mt-14 md:gap-8">
+        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-6 items-center md:mt-14">
           <h2
-            className="font-sans font-light leading-[0.85] tracking-[-0.04em] text-white"
-            style={{ fontSize: "clamp(1.75rem, 14vw, 7.5rem)" }}
+            className="font-light leading-[0.85] tracking-[-0.04em] text-white md:col-span-9 md:col-start-1"
+            style={{ fontSize: "clamp(1.75rem, 18vw, 11.5rem)" }}
           >
-            Logixa Lab
+          Logixa Lab
           </h2>
 
-          <ul className="flex shrink-0 flex-col gap-2 pt-0 text-left sm:pt-1 sm:text-right md:gap-2.5 md:pt-2">
+          <ul className="md:col-span-3 md:col-start-10 flex shrink-0 flex-col gap-2 pt-0 text-left sm:pt-1 md:gap-2.5 md:pt-2">
             {legalLinks.map((l) => (
               <li key={l.href}>
                 <Link
@@ -128,8 +128,8 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <p className="mt-8 max-w-68 text-xs leading-snug text-(--hero-accent) md:mt-10">
-          Copyrights @ Logixalab All Rights Reserved
+        <p className="mt-12 max-w-88 text-xs leading-snug text-(--hero-accent) md:mt-12">
+          Copyrights @ Logixalab <br/>All Rights Reserved
         </p>
       </div>
     </footer>

@@ -1,8 +1,10 @@
 import HeroSection from "@/app/sections/HeroSection";
 import IntroSection from "@/app/sections/IntroSection";
 import CoreCapabilitiesSection from "@/app/sections/CoreCapabilitiesSection";
+import ToolsSection from "@/app/sections/ToolsSection";
+import DeliveryFrameworkSection from "@/app/sections/DeliveryFrameworkSection";
+import GlobalExperienceSection from "@/app/sections/GlobalExperienceSection";
 import ContactSection from "@/app/sections/ContactSection";
-import Footer from "@/app/components/Footer";
 
 export default function Home() {
   return (
@@ -10,8 +12,10 @@ export default function Home() {
       <HeroSection />
       <IntroSection />
       <CoreCapabilitiesSection />
-      <ContactSection />
-      <Footer />
+      <ToolsSection />
+      <DeliveryFrameworkSection />
+      <GlobalExperienceSection />
+      <ContactSection endZone />
     </main>
   );
 }

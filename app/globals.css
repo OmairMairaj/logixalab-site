@@ -64,6 +64,29 @@
   }
 }
 
+/* Global Experience — lime pulse on map markers */
+@keyframes globe-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.globe-ping {
+  animation: globe-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-ping {
+    animation: none;
+  }
+}
+
 /* Lenis: document must grow with content; Tailwind h-full on <html> can fight lenis.css */
 html.lenis {
   height: auto !important;
@@ -235,5 +258,29 @@ html.lenis body {
   .header-cta:active {
     transform: scale(0.96);
     transition: transform 0.1s ease;
+  }
+}
+
+/* Lime variant of the site CTA (contact submit) — same feel (icon spin + flood
+   sweep + press), lime pill per the design, dark logo + label on the left. */
+@layer components {
+  .header-cta--lime {
+    background: var(--hero-accent);
+    color: var(--hero-canvas);
+    border-color: rgba(204, 255, 0, 0.55);
+    font-weight: 700;
+  }
+
+  /* brighter-lime sheen sweeps across on hover (same mechanic as .header-cta) */
+  .header-cta--lime::after {
+    background: linear-gradient(105deg, #d4ff66 0%, #eaffb0 100%);
+  }
+
+  .header-cta--lime:hover {
+    color: var(--hero-canvas);
+    border-color: rgba(255, 255, 255, 0.55);
+    box-shadow:
+      0 6px 26px rgba(204, 255, 0, 0.5),
+      0 2px 10px rgba(0, 0, 0, 0.15);
   }
 }

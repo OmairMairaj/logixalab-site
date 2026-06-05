@@ -1,41 +1,25 @@
 import Image from "next/image";
 
-/** One shared fixed backdrop for /services — content scrolls over it (no per-section bg repeat). */
+/**
+ * Shared fixed backdrop for /services and /services/[slug] — a cohesive dark
+ * canvas (matches the homepage sections) with a soft lime glow and a faint
+ * binary accent. Content scrolls over it; no per-section background repeat.
+ */
 export default function ServicesPageBackdrop() {
   return (
-    <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
-      <div className="absolute inset-0">
-        <Image
-          src="/images/background.png"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        <div className="absolute left-0 top-0 h-full w-[56vw] -translate-x-1/3">
-          <Image
-            src="/images/left.png"
-            alt=""
-            fill
-            className="object-contain object-left"
-            sizes="65vw"
-          />
-        </div>
-        <div className="absolute right-0 top-0 z-10 h-[92vh] w-[66vw] translate-x-[30%] -translate-y-[24%]">
-          <Image
-            src="/images/right.png"
-            alt=""
-            fill
-            className="object-contain object-top-right"
-            sizes="66vw"
-          />
-        </div>
+    <div className="pointer-events-none fixed inset-0 z-0 bg-(--section-canvas)" aria-hidden>
+      {/* faint binary texture, top-right */}
+      <div className="absolute right-0 top-0 hidden h-[60vh] w-[min(60vw,800px)] opacity-[0.9] md:block">
+        <Image src="/images/binary.png" alt="" fill className="object-contain object-right-top" sizes="60vw" />
       </div>
-      <div
-        className="absolute inset-0 z-20 bg-linear-to-b from-black/35 via-black/15 to-black/45"
-        aria-hidden
-      />
+
+      {/* soft lime glow anchored bottom-center */}
+      <div className="absolute inset-x-0 bottom-[-10vh] mx-auto h-[80vh] w-full opacity-50">
+        {/* <Image src="/images/wide-blur.png" alt="" fill className="object-contain object-bottom" sizes="100vw" /> */}
+      </div>
+
+      {/* top + bottom vignette to seat the content */}
+      <div className="absolute inset-0 bg-linear-to-b from-black/55 via-transparent to-black/65" />
     </div>
   );
 }

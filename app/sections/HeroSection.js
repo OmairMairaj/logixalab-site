@@ -31,6 +31,7 @@ export default function HeroSection() {
   const HEAD_EASE = 0.3; // how snappily the head lobe chases the cursor
 
   const revealRef = useRef(null); // hero-level SVG (mask defs + robot + sheen)
+  const glassRef = useRef(null); // backdrop-filtered liquid-glass lens div
   const robotRef = useRef(null); // <image> robot, sized/placed over the portrait
   const nodeRefs = useRef([]); // <circle> elements for the chain
   const nodesRef = useRef([]); // { x, y } positions
@@ -220,13 +221,24 @@ export default function HeroSection() {
             0.03,
           )
           /* Phase 2 (0.36 → 0.64) — once the text is gone, the center portrait
-             fades and blurs out on its own. */
+             fades and blurs out, taking the liquid-glass lens + robot reveal with
+             it so the blob doesn't linger after the female is gone. */
           .to(
             portrait,
             {
               autoAlpha: 0,
               scale: 1.06,
               filter: "blur(14px)",
+              ease: "power1.inOut",
+              duration: 0.28,
+              force3D: true,
+            },
+            0.36,
+          )
+          .to(
+            [glassRef.current, revealRef.current].filter(Boolean),
+            {
+              autoAlpha: 0,
               ease: "power1.inOut",
               duration: 0.28,
               force3D: true,
@@ -359,6 +371,7 @@ export default function HeroSection() {
             (Refraction needs Chromium's backdrop-filter url(); other browsers fall
             back to a frosted blur.) */}
         <div
+          ref={glassRef}
           className="pointer-events-none absolute inset-0 z-[12]"
           aria-hidden
           style={{

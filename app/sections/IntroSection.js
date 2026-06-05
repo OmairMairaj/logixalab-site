@@ -1,97 +1,171 @@
-"use client";
+  "use client";
 
-import Image from "next/image";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useLayoutEffect, useRef } from "react";
+  import Image from "next/image";
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { useLayoutEffect, useRef } from "react";
 
-gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger);
 
-const INTRO_COPY =
-  "LogixaLab builds enterprise platforms, AI systems, cloud infrastructure, and digital experiences designed to perform under real-world pressure. From AI-powered automation to large-scale platform engineering, every solution is built in-house by one integrated team.";
+  const INTRO_COPY =
+    "LogixaLab builds enterprise platforms, AI systems, cloud infrastructure, and digital experiences designed to perform under real-world pressure. From AI-powered automation to large-scale platform engineering, every solution is built in-house by one integrated team.";
 
-export default function IntroSection() {
-  const sectionRef = useRef(null);
-  const paragraphRef = useRef(null);
+  export default function IntroSection() {
+    const sectionRef = useRef(null);
+    const paragraphRef = useRef(null);
+    const glowRef = useRef(null);
 
-  useLayoutEffect(() => {
-    const section = sectionRef.current;
-    const paragraph = paragraphRef.current;
-    if (!section || !paragraph) return undefined;
+    useLayoutEffect(() => {
+      const section = sectionRef.current;
+      const paragraph = paragraphRef.current;
+      const glow = glowRef.current;
+      if (!section || !paragraph) return undefined;
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const chars = paragraph.querySelectorAll("[data-intro-char]");
-    if (reduce || !chars.length) return undefined;
+      const chars = paragraph.querySelectorAll("[data-intro-char]");
+      if (!chars.length) return undefined;
 
-    /* Decode / blur-resolve: each glyph resolves from dim + blurred to sharp
-       white, staggered with scroll position. */
-    const ctx = gsap.context(() => {
-      gsap.set(chars, { filter: "blur(10px)", autoAlpha: 0.12, yPercent: 18 });
-      gsap.to(chars, {
-        filter: "blur(0px)",
-        autoAlpha: 1,
-        yPercent: 0,
-        ease: "power2.out",
-        duration: 0.5,
-        stagger: 0.012,
-        force3D: true,
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: "+=60%",
-          scrub: 0.4,
-          invalidateOnRefresh: true,
+      const mm = gsap.matchMedia();
+
+      /* Desktop: the deep -mt overlap pins this section in its FINAL position
+        while the hero (z-20, on top) is still on screen — so it can reveal in
+        place with no slide-up. It stays fully hidden behind the hero while the
+        hero flies its text out and fades the whole panel to black; only AFTER
+        the hero has gone does the lime glow power up from the bottom and the
+        copy decode out of it. */
+      mm.add(
+        "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          gsap.set(glow, { autoAlpha: 0, yPercent: 30, scale: 0.9 });
+          gsap.set(chars, { filter: "blur(10px)", autoAlpha: 0, yPercent: 18 });
+
+          /* Glow-up — starts ~one viewport after the pin (i.e. once the hero has
+            fully faded to black), powering up from the bottom of the screen. */
+          const glowTl = gsap.to(glow, {
+            autoAlpha: 1,
+            yPercent: 0,
+            scale: 1,
+            ease: "power2.out",
+            duration: 0.5,
+            scrollTrigger: {
+              trigger: section,
+              start: "top top-=100%",
+              end: "top top-=140%",
+              scrub: 0.4,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          /* Decode — each glyph resolves from dim + blurred to sharp white, just
+            after the glow has come up, staggered across the remaining scroll. */
+          const decodeTl = gsap.to(chars, {
+            filter: "blur(0px)",
+            autoAlpha: 1,
+            yPercent: 0,
+            ease: "power2.out",
+            duration: 0.5,
+            stagger: 0.012,
+            force3D: true,
+            scrollTrigger: {
+              trigger: section,
+              start: "top top-=115%",
+              end: "top top-=175%",
+              scrub: 0.4,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          return () => {
+            glowTl.scrollTrigger?.kill();
+            glowTl.kill();
+            decodeTl.scrollTrigger?.kill();
+            decodeTl.kill();
+          };
         },
+      );
+
+      /* Mobile: no hero overlap / pin (those classes are md: only) — a simple
+        on-enter decode as the section scrolls into view. */
+      mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
+        gsap.set(glow, { autoAlpha: 1 });
+        gsap.set(chars, { filter: "blur(10px)", autoAlpha: 0.12, yPercent: 18 });
+
+        const tl = gsap.to(chars, {
+          filter: "blur(0px)",
+          autoAlpha: 1,
+          yPercent: 0,
+          ease: "power2.out",
+          duration: 0.5,
+          stagger: 0.012,
+          force3D: true,
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: "+=60%",
+            scrub: 0.4,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        return () => {
+          tl.scrollTrigger?.kill();
+          tl.kill();
+        };
       });
-    }, section);
 
-    return () => ctx.revert();
-  }, []);
+      /* Reduced motion: static, fully-legible copy. */
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        gsap.set(glow, { autoAlpha: 1 });
+        gsap.set(chars, { filter: "blur(0px)", autoAlpha: 1, yPercent: 0 });
+      });
 
-  return (
-    <section
-      ref={sectionRef}
-      className="relative z-10 bg-(--section-canvas) md:-mt-[100vh] md:h-[200vh]"
-    >
-      {/* Sticky inner panel — keeps the screen "stuck" on the #0c0c0c surface
-         while the copy decodes (plus a buffer) before releasing. */}
-      <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden px-(--gutter) md:h-[20vh]">
-        {/* Soft green glow particle anchored to the bottom-center, behind the copy. */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 mx-auto h-[100%] w-full"
-          aria-hidden
-        >
-          <Image
-            src="/images/wide-blur.png"
-            alt=""
-            fill
-            className="object-contain object-bottom mt-20"
-            sizes="100vw"
-          />
+      return () => mm.revert();
+    }, []);
+
+    return (
+      <section
+        ref={sectionRef}
+        className="relative z-10 bg-black md:-mt-[200vh] md:h-[400vh]"
+      >
+        {/* Sticky inner panel — keeps the screen "stuck" on the #0c0c0c surface
+          while the copy decodes (plus a buffer) before releasing. */}
+        <div className="sticky top-0 flex min-h-screen items-center justify-center overflow-hidden px-(--gutter) md:h-screen">
+          {/* Soft green glow particle anchored to the bottom-center, behind the copy. */}
+          <div
+            ref={glowRef}
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-0 mx-auto top-56 h-[100%] w-full will-change-[opacity,transform]"
+            aria-hidden
+          >
+            <Image
+              src="/images/wide-blur.png"
+              alt=""
+              fill
+              className="object-contain object-bottom mt-20"
+              sizes="100vw"
+            />
+          </div>
+
+          <p
+            ref={paragraphRef}
+            className="relative z-10 flex max-w-[min(80vw,1500px)] flex-wrap justify-center gap-x-[0.32em] font-heading gap-y-2 text-center text-[clamp(1.125rem,2.4vw,4rem)] font-normal leading-[1.2] tracking-[-0.01em] text-white"
+          >
+            {INTRO_COPY.split(/\s+/).map((word, wi) => (
+              <span
+                key={`intro-w-${wi}`}
+                className="inline-block whitespace-nowrap"
+              >
+                {word.split("").map((char, ci) => (
+                  <span
+                    key={`intro-w-${wi}-c-${ci}`}
+                    data-intro-char=""
+                    className="inline-block will-change-[filter,opacity,transform]"
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+            ))}
+          </p>
         </div>
-
-        <p
-          ref={paragraphRef}
-          className="relative z-10 flex max-w-[min(80vw,1500px)] flex-wrap justify-center gap-x-[0.32em] gap-y-2 text-center font-sans text-[clamp(1.125rem,2.4vw,4rem)] font-normal leading-[1.55] tracking-[-0.01em] text-white"
-        >
-          {INTRO_COPY.split(/\s+/).map((word, wi) => (
-            <span
-              key={`intro-w-${wi}`}
-              className="inline-block whitespace-nowrap"
-            >
-              {word.split("").map((char, ci) => (
-                <span
-                  key={`intro-w-${wi}-c-${ci}`}
-                  data-intro-char=""
-                  className="inline-block will-change-[filter,opacity,transform]"
-                >
-                  {char}
-                </span>
-              ))}
-            </span>
-          ))}
-        </p>
-      </div>
-    </section>
-  );
-}
+      </section>
+    );
+  }
