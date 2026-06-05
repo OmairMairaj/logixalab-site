@@ -12,7 +12,9 @@ export const metadata = {
 export default function WorkPage() {
   return (
     <>
-      <main className="relative overflow-x-clip bg-(--hero-canvas) text-white">
+      {/* Shared #0c0c0c canvas (same pattern as /services): hero + showcase
+          scroll over one fixed backdrop with binary accent + vignette. */}
+      <main className="relative overflow-x-clip text-white">
         <WorkPageBackdrop />
         <div className="relative z-10">
           <WorkHero />

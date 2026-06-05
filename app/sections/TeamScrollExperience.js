@@ -55,6 +55,10 @@ const TEAM = [
 const TEAM_PARA =
   "At LOGIXA LAB, we are a collective of engineers, designers, and AI specialists united by one mission — to build intelligent systems that shape the future of business.";
 
+/** Same lime display gradient used by the /services + /work heroes. */
+const HEADING_GRADIENT =
+  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
+
 /** Faint binary texture in the top-right + bottom-left corners — the Figma's
  *  only background ornament (no lime burst on this page). */
 function BinaryBackdrop() {
@@ -94,7 +98,7 @@ function TeamCard({ member, style }) {
       style={style}
     >
       <div
-        className="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-b from-white/[0.07] via-white/[0.02] to-black/50 shadow-[0_24px_70px_rgba(0,0,0,0.45)]"
+        className="relative overflow-hidden rounded-lg border border-white/10 bg-linear-to-b from-white/[0.07] via-white/[0.02] to-black/50 shadow-[0_24px_70px_rgba(0,0,0,0.45)]"
         style={{ aspectRatio: "0.62 / 1" }}
       >
         <Image
@@ -160,13 +164,15 @@ export default function TeamScrollExperience() {
         const railEndX = () =>
           -Math.max(rail.scrollWidth - window.innerWidth, 0);
 
-        /* Big hero: the headline is laid out at its DOCKED size in CSS and scaled
-           UP here via a GPU transform — composited = smooth, and scale 1 at rest
-           keeps the docked text (the state you dwell on) perfectly sharp. */
+        /* Big hero: the headline is laid out at its BIG size in CSS and scaled
+           DOWN to dock. Downscaling a rasterized layer stays crisp (you discard
+           pixels), so the big hero — the first thing seen — is pixel-sharp;
+           upscaling (the old approach) blurred it. DOCK_SCALE = docked ÷ big. */
+        const DOCK_SCALE = 1 / 1.9;
         gsap.set(bgLayer, { autoAlpha: 1 });
         gsap.set(heroBlock, {
           transformOrigin: "left top",
-          scale: 1.9,
+          scale: 1,
           y: () => window.innerHeight * 0.15,
           force3D: true,
         });
@@ -191,7 +197,7 @@ export default function TeamScrollExperience() {
         const dockDur = 0.28;
         tl.to(
           heroBlock,
-          { scale: 1, y: 0, ease: "power3.inOut", duration: dockDur },
+          { scale: DOCK_SCALE, y: 0, ease: "power3.inOut", duration: dockDur },
           dockStart,
         );
 
@@ -249,32 +255,40 @@ export default function TeamScrollExperience() {
   }, []);
 
   return (
-    <section className="relative bg-black text-white">
+    <section className="relative bg-(--section-canvas) text-white">
       <h1 className="sr-only">The Minds Behind Logixa Lab — Our Team</h1>
 
       {/* ───────────────────── Desktop scrub experience ───────────────────── */}
       <div className="hidden motion-safe:md:block">
-        {/* Fixed binary backdrop — fades out in Phase E. */}
+        {/* Fixed binary backdrop + vignette — fades out in Phase E. Mirrors the
+            /services + /work canvas (binary accent over #0c0c0c with a vignette). */}
         <div
           ref={bgLayerRef}
           className="pointer-events-none fixed inset-0 z-0 will-change-[opacity]"
           aria-hidden
         >
           <BinaryBackdrop />
+          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/65" />
         </div>
 
-        {/* Headline — anchored top-left, starts scaled-up (big) then docks. */}
+        {/* Headline — anchored top-left, laid out at its BIG size (sharp) then
+            scaled DOWN to dock. Sizes = docked clamp × 1.9 (DOCK_SCALE inverse). */}
         <div
           ref={heroBlockRef}
           className="pointer-events-none fixed left-(--gutter) top-[calc(var(--header-offset)+4vh)] z-30 will-change-transform"
         >
           <h2
-            className="font-heading text-[clamp(1.9rem,4.4vw,3.4rem)] font-normal leading-[0.98] tracking-[-0.03em] text-white antialiased"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.45)" }}
+            className="font-heading text-[clamp(3.61rem,8.36vw,6.46rem)] font-normal leading-[0.98] tracking-[-0.03em] antialiased"
+            style={{
+              backgroundImage: HEADING_GRADIENT,
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
           >
             The Minds
           </h2>
-          <p className="font-heading mt-1 text-[clamp(1.4rem,3.2vw,2.6rem)] font-normal leading-[1.02] tracking-[-0.02em] text-white/85 antialiased">
+          <p className="font-heading mt-1 text-[clamp(2.66rem,6.08vw,4.94rem)] font-normal leading-[1.02] tracking-[-0.02em] text-white/92 antialiased">
             Behind Logixa Lab
           </p>
         </div>
@@ -320,10 +334,19 @@ export default function TeamScrollExperience() {
         </div>
 
         <div className="relative z-10">
-          <h2 className="font-heading text-[clamp(2rem,9vw,3rem)] font-normal leading-[1.0] tracking-[-0.02em] text-white">
-            The Minds
-            <br />
-            Behind Logixa Lab
+          <h2 className="font-heading text-[clamp(2rem,9vw,3rem)] font-normal leading-[1.0] tracking-[-0.02em]">
+            <span
+              className="block"
+              style={{
+                backgroundImage: HEADING_GRADIENT,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              The Minds
+            </span>
+            <span className="block text-white/92">Behind Logixa Lab</span>
           </h2>
           <p
             className="mt-5 max-w-[42ch] text-sm leading-relaxed text-white/70"

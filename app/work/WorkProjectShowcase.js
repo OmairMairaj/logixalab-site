@@ -92,18 +92,11 @@ export default function WorkProjectShowcase() {
 
         tl.call(() => {
           for (let j = 0; j < projectCount; j++) {
-            const active = j === i;
-            slides[j]?.setAttribute("aria-hidden", active ? "false" : "true");
+            slides[j]?.setAttribute("aria-hidden", j === i ? "false" : "true");
           }
         }, null, t0);
 
-        for (let j = 0; j < projectCount; j++) {
-          if (j !== i) {
-            tl.set(imgs[j], { y: 0, opacity: 1 }, t0);
-            tl.set([lefts[j], rights[j]], { opacity: 1, clearProps: "transform" }, t0);
-          }
-        }
-
+        /* Hard-switch which slide is active; the incoming one sits on top. */
         for (let j = 0; j < projectCount; j++) {
           const active = j === i;
           tl.set(
@@ -117,37 +110,26 @@ export default function WorkProjectShowcase() {
           );
         }
 
-        tl.set([lefts[i], rights[i]], { opacity: 1, clearProps: "transform" }, t0);
-        tl.set(imgs[i], { y: "22vh", opacity: 0.85, force3D: true }, t0);
+        if (i === 0) {
+          /* First project starts fully visible so the pinned frame matches the
+             pre-pin frame — no fade-out/in blink as the section engages. It
+             simply holds, then the next project rises over it. */
+          tl.set(imgs[i], { y: 0, opacity: 1, force3D: true }, t0);
+          tl.set([lefts[i], rights[i]], { opacity: 1 }, t0);
+        } else {
+          /* Entrance: the mockup rises in while the side columns fade in just
+             behind it — one clean gesture, never disappear-then-reappear. */
+          tl.set(imgs[i], { y: "22vh", opacity: 0, force3D: true }, t0);
+          tl.set([lefts[i], rights[i]], { opacity: 0 }, t0);
+          tl.to(imgs[i], { y: 0, opacity: 1, duration: BEAT.motion }, t0);
 
-        /* Same `t0`: image rise and side fade-out together */
-        tl.to(imgs[i], { y: 0, opacity: 1, duration: BEAT.motion }, t0);
-        tl.to(lefts[i], { opacity: 0, duration: BEAT.fadeOut, ease: "power2.inOut" }, t0);
-        tl.to(rights[i], { opacity: 0, duration: BEAT.fadeOut, ease: "power2.inOut" }, t0);
-
-        const revealT = t0 + BEAT.motion * BEAT.revealStartFrac;
-        tl.fromTo(
-          lefts[i],
-          { opacity: 0 },
-          {
-            opacity: 1,
-            duration: BEAT.reveal,
-            ease: "power2.out",
-            immediateRender: false,
-          },
-          revealT,
-        );
-        tl.fromTo(
-          rights[i],
-          { opacity: 0 },
-          {
-            opacity: 1,
-            duration: BEAT.reveal,
-            ease: "power2.out",
-            immediateRender: false,
-          },
-          revealT,
-        );
+          const revealT = t0 + BEAT.motion * BEAT.revealStartFrac;
+          tl.to(
+            [lefts[i], rights[i]],
+            { opacity: 1, duration: BEAT.reveal, ease: "power2.out" },
+            revealT,
+          );
+        }
       }
     }, section);
 
@@ -161,6 +143,28 @@ export default function WorkProjectShowcase() {
       aria-label="Selected work"
     >
       <div className="relative isolate min-h-dvh w-full max-md:min-h-0 max-md:space-y-14 max-md:py-12">
+        {/* Binary texture — left strip + lower-left, behind every slide. */}
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
+          {/* <div className="absolute right-[-100px] top-[200px] h-[50vh] w-[40vw] -translate-y-1/2 opacity-[0.9]">
+            <Image
+              src="/images/binary.png"
+              alt=""
+              fill
+              className="object-contain object-left"
+              sizes="30vw"
+            />
+          </div> */}
+          <div className="absolute bottom-[60px] left-[60px] h-[50vh] w-[46vw] opacity-[0.9]">
+            <Image
+              src="/images/binary.png"
+              alt=""
+              fill
+              className="object-contain object-left-bottom"
+              sizes="26vw"
+            />
+          </div>
+        </div>
+
         {WORK_PROJECTS.map((project, i) => (
           <article
             key={project.id}
@@ -170,7 +174,7 @@ export default function WorkProjectShowcase() {
             className={`absolute inset-0 flex items-center ${i === 0 ? "z-10 opacity-100" : "z-0 opacity-0"} max-md:relative max-md:inset-auto max-md:z-auto max-md:opacity-100`}
             aria-hidden={i === 0 ? false : true}
           >
-            <div className="mx-auto w-full max-w-[min(100%,1440px)] px-5 py-12 md:px-10 md:py-20">
+            <div className="relative z-10 w-full px-(--gutter) py-12 md:py-20">
               <div className="grid w-full grid-cols-1 items-center gap-7 lg:grid-cols-12 lg:gap-8 xl:gap-10">
                 <div
                   ref={(el) => {
@@ -180,11 +184,11 @@ export default function WorkProjectShowcase() {
                 >
                   <h2
                     id={`work-project-${project.id}`}
-                    className="font-heading text-2xl font-normal tracking-tight text-white md:text-3xl"
+                    className="font-heading text-[clamp(1.5rem,2.6vw,2.25rem)] font-normal tracking-tight text-(--hero-accent)"
                   >
                     {project.title}
                   </h2>
-                  <div className="mt-4 space-y-3 text-sm leading-relaxed text-white/82 md:mt-5 md:space-y-4 md:text-[0.9375rem]">
+                  <div className="mt-4 space-y-3 text-sm leading-relaxed text-white/70 md:mt-5 md:space-y-4 md:text-[0.9375rem]">
                     {project.paragraphs.map((p, pi) => (
                       <p key={`${project.id}-p-${pi}`}>{p}</p>
                     ))}
@@ -207,16 +211,22 @@ export default function WorkProjectShowcase() {
                     }}
                     className="will-change-transform relative mx-auto w-full max-w-[min(100%,720px)] backface-hidden"
                   >
-                    <div className="relative overflow-hidden rounded-xl border border-white/12 bg-black/30 shadow-[0_40px_100px_rgba(0,0,0,0.55)]">
-                      <Image
-                        src={project.image}
-                        alt={project.imageAlt}
-                        width={1200}
-                        height={800}
-                        className="h-auto w-full object-cover object-top"
-                        sizes="(min-width: 1024px) 50vw, 100vw"
-                        priority={i === 0}
+                    {/* Full-page screenshot inside a fixed "browser window".
+                        On hover the background scrolls top → bottom, revealing
+                        the whole page. Percentage background-position lands the
+                        scroll exactly bottom-aligned no matter how tall the
+                        capture is, so every project image works unmeasured. */}
+                    <div className="group/shot relative aspect-[16/10] w-full overflow-hidden rounded-lg border border-white/10 bg-black/30 shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
+                      <div
+                        role="img"
+                        aria-label={project.imageAlt}
+                        className="absolute inset-0 bg-top bg-no-repeat [background-size:100%_auto] transition-[background-position] duration-[5000ms] ease-linear motion-safe:group-hover/shot:bg-bottom"
+                        style={{ backgroundImage: `url(${project.image})` }}
                       />
+                      {/* Hover affordance — fades out once you're scrolling. */}
+                      <span className="pointer-events-none absolute bottom-2.5 right-2.5 rounded-full bg-black/55 px-2.5 py-1 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-white/70 backdrop-blur-sm transition-opacity duration-300 group-hover/shot:opacity-0 max-md:hidden">
+                        Hover to explore
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -227,14 +237,14 @@ export default function WorkProjectShowcase() {
                   }}
                   className="will-change-[opacity] lg:col-span-3 lg:pl-2 order-3"
                 >
-                  <h3 className="text-[17px] font-medium text-(--hero-accent)">Tech Stack</h3>
-                  <ul className="mt-4 list-inside list-disc space-y-2.5 text-sm text-white/85 md:text-[0.9375rem]">
+                  <h3 className="font-heading text-[clamp(0.95rem,1.1vw,1.0625rem)] font-normal text-(--hero-accent)">Tech Stack</h3>
+                  <ul className="mt-4 list-inside list-disc space-y-2.5 text-sm text-white/80 md:text-[0.9375rem]">
                     {project.tech.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
-                  <h3 className="mt-6 text-[17px] font-medium text-(--hero-accent) md:mt-10">Timeline</h3>
-                  <p className="mt-3 text-sm text-white/88 md:text-[0.9375rem]">{project.timeline}</p>
+                  <h3 className="mt-6 font-heading text-[clamp(0.95rem,1.1vw,1.0625rem)] font-normal text-(--hero-accent) md:mt-10">Timeline</h3>
+                  <p className="mt-3 text-sm text-white/85 md:text-[0.9375rem]">{project.timeline}</p>
                 </div>
               </div>
             </div>

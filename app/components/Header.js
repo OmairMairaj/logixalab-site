@@ -10,7 +10,6 @@ const navLinks = [
   { label: "Services", href: "/services" },
   { label: "Work", href: "/work" },
   { label: "Team", href: "/team" },
-  { label: "Blog", href: "/#blog" },
 ];
 
 export default function Header() {

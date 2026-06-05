@@ -303,7 +303,7 @@ export default function HeroSection() {
         {/* Background — green burst + side glows (scoped to the hero) */}
         <div ref={bgRef} className="pointer-events-none absolute inset-0 z-0" aria-hidden>
           <Image
-            src="/images/background.png"
+            src="/images/background.webp"
             alt=""
             fill
             className="object-cover object-center"
