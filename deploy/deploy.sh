@@ -14,8 +14,8 @@ git pull --ff-only
 echo "→ Installing dependencies (clean, reproducible)..."
 npm ci
 
-echo "→ Building production bundle..."
-npm run build
+echo "→ Building production bundle (Node server)..."
+npm run build:server
 
 echo "→ Reloading via PM2..."
 pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js

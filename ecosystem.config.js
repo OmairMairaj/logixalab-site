@@ -14,7 +14,7 @@
  *   pm2 startup       # run the printed command once so PM2 starts on boot
  *
  * Redeploy after a git pull:
- *   git pull && npm ci && npm run build && pm2 reload logixalab
+ *   git pull && npm ci && npm run build:server && pm2 reload logixalab
  *
  * SMTP secrets live in `.env.local` (gitignored); Next loads it automatically
  * at runtime — do NOT put them here (this file is committed).
