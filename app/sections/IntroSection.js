@@ -99,10 +99,15 @@
           duration: 0.5,
           stagger: 0.03,
           force3D: true,
+          /* Trigger on the PARAGRAPH (not the section) so the reveal tracks the
+             text itself — the copy is centered in a ~100vh section, so a
+             section-top trigger fired ~50vh too late (text already parked on
+             screen). Now it decodes as the paragraph rises from the lower
+             viewport up toward center. */
           scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "+=60%",
+            trigger: paragraph,
+            start: "top 90%",
+            end: "top 45%",
             scrub: 0.4,
             invalidateOnRefresh: true,
           },

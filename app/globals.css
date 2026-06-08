@@ -300,6 +300,21 @@ html.lenis body {
     height: 3.5rem;
     font-size: var(--text-base);
   }
+
+  /* White variant — solid white pill with a black label + black logo. Only the
+     resting state changes (dark glass → white/black); hover still inherits the
+     brand lime flood + the 360° icon-spin from the base .header-cta rules.
+     Used by the header CTA + the Core Capabilities CTA (white pill). */
+  .header-cta--white {
+    color: #0c0c0c;
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 6px 20px rgba(0, 0, 0, 0.16);
+  }
 }
 
 /* Lime variant of the site CTA (contact submit) — same feel (icon spin + flood
@@ -331,6 +346,51 @@ html.lenis body {
    Hover-capable pointers reveal color on :hover (and the marquee pauses, see
    ToolsSection.js); touch devices have no hover, so ToolsSection drives
    --tool-color per chip from a center scan-zone as the marquee scrolls. */
+
+/* Mobile hero liquid-blob — the spotlight mask is built from a core lobe + three
+   satellite lobes (see .hero-spot). Registering these lobe-center vars as real
+   <percentage> properties is what lets them INTERPOLATE; bare custom props don't
+   animate. They drive only the mask, so the wobble costs a small mask repaint —
+   no SVG filters / backdrop-filter (the heavy desktop path). */
+@property --sy1 { syntax: "<percentage>"; inherits: false; initial-value: 50%; }
+@property --sx2 { syntax: "<percentage>"; inherits: false; initial-value: 30%; }
+@property --sy2 { syntax: "<percentage>"; inherits: false; initial-value: 33%; }
+@property --sx3 { syntax: "<percentage>"; inherits: false; initial-value: 70%; }
+@property --sy3 { syntax: "<percentage>"; inherits: false; initial-value: 44%; }
+@property --sx4 { syntax: "<percentage>"; inherits: false; initial-value: 52%; }
+@property --sy4 { syntax: "<percentage>"; inherits: false; initial-value: 71%; }
+
+/* Drift the lobe centers so the metaball silhouette squishes and stretches like
+   a drop of liquid. A 4-step cycle with generous, out-of-phase travel keeps the
+   shape visibly non-circular; all values stay inside the box so the soft edges
+   never hit a hard clip. */
+@keyframes heroSpotMorph {
+  0%, 100% {
+    --sy1: 50%;
+    --sx2: 30%; --sy2: 33%;
+    --sx3: 70%; --sy3: 44%;
+    --sx4: 52%; --sy4: 71%;
+  }
+  25% {
+    --sy1: 45%;
+    --sx2: 38%; --sy2: 41%;
+    --sx3: 63%; --sy3: 36%;
+    --sx4: 60%; --sy4: 66%;
+  }
+  50% {
+    --sy1: 54%;
+    --sx2: 27%; --sy2: 38%;
+    --sx3: 73%; --sy3: 51%;
+    --sx4: 45%; --sy4: 73%;
+  }
+  75% {
+    --sy1: 48%;
+    --sx2: 34%; --sy2: 28%;
+    --sx3: 67%; --sy3: 47%;
+    --sx4: 56%; --sy4: 69%;
+  }
+}
+
 @layer components {
   /* Hero reveal modes — HeroSection sets data-mode on the hero:
        full = desktop cursor blob   (SVG mask + backdrop-filter glass lens)
@@ -341,9 +401,40 @@ html.lenis body {
      pre-hydration) the glass + reveal show, matching prior behavior. */
   .hero-spot {
     display: none;
+    /* Liquid-blob window — a metaball silhouette: one core lobe plus three
+       satellite lobes. Default mask compositing (add) fuses their soft radial
+       alphas into a single gooey shape with feathered edges, so the revealed
+       robot reads as an organic drop rather than a hard circle. Ellipse %-sized
+       so every feather lands inside the box (no hard clip). Cheap on low-end:
+       just a gradient mask — none of the desktop SVG-filter / backdrop work. */
+    --sy1: 50%;
+    --sx2: 30%; --sy2: 33%;
+    --sx3: 70%; --sy3: 44%;
+    --sx4: 52%; --sy4: 71%;
+    -webkit-mask-image:
+      radial-gradient(ellipse 30% 30% at 50% var(--sy1), #000 0 55%, transparent 100%),
+      radial-gradient(ellipse 25% 25% at var(--sx2) var(--sy2), #000 0 52%, transparent 100%),
+      radial-gradient(ellipse 26% 26% at var(--sx3) var(--sy3), #000 0 52%, transparent 100%),
+      radial-gradient(ellipse 24% 24% at var(--sx4) var(--sy4), #000 0 50%, transparent 100%);
+    mask-image:
+      radial-gradient(ellipse 30% 30% at 50% var(--sy1), #000 0 55%, transparent 100%),
+      radial-gradient(ellipse 25% 25% at var(--sx2) var(--sy2), #000 0 52%, transparent 100%),
+      radial-gradient(ellipse 26% 26% at var(--sx3) var(--sy3), #000 0 52%, transparent 100%),
+      radial-gradient(ellipse 24% 24% at var(--sx4) var(--sy4), #000 0 50%, transparent 100%);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
   [data-mode="auto"] .hero-spot {
     display: block;
+    /* The "liquid" feel: slowly drift the lobe centers so the silhouette
+       breathes. Only the registered mask vars animate — the mask repaints on a
+       ~112-192px box, so it stays smooth on low-end phones. */
+    animation: heroSpotMorph 8s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-mode="auto"] .hero-spot {
+      animation: none;
+    }
   }
   [data-mode="auto"] .hero-glass,
   [data-mode="auto"] .hero-reveal,
@@ -552,7 +643,9 @@ html.lenis body {
     width: max-content;
     padding: 0.3rem 0;
     font-family: var(--font-michroma), ui-sans-serif, sans-serif;
-    font-size: clamp(2.1rem, 12vw, 3.25rem);
+    /* Scales with viewport but stays comfortably within the screen for the
+       longest label ("Services") in the wide Michroma face. */
+    font-size: clamp(1.6rem, 8.5vw, 2.5rem);
     line-height: 1.08;
     letter-spacing: -0.02em;
     color: #f5f5f5;

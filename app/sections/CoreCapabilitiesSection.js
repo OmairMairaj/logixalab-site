@@ -291,7 +291,7 @@ export default function CoreCapabilitiesSection() {
             </h2>
 
             <div ref={buttonRef} className="mt-[clamp(1rem,2vw,1.75rem)] will-change-[opacity,transform]">
-              <Link href="/contact" className="header-cta">
+              <Link href="/contact" className="header-cta header-cta--white">
                 <span>Let&apos;s Talk</span>
                 <Image
                   src="/images/logo-black.png"

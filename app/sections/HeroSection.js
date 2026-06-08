@@ -15,14 +15,37 @@ gsap.registerPlugin(ScrollTrigger);
    face/torso (x,y in [0,1] of the portrait box). Looped slowly; each segment
    runs SPOT_SEG_DUR seconds (5 segments ≈ 14s round trip). */
 const SPOT_PATH = [
-  { nx: 0.5, ny: 0.3 },
+  { nx: 0.55, ny: 0.2 },
   { nx: 0.66, ny: 0.45 },
   { nx: 0.54, ny: 0.62 },
-  { nx: 0.36, ny: 0.54 },
+  { nx: 0.26, ny: 0.64 },
   { nx: 0.46, ny: 0.38 },
-  { nx: 0.5, ny: 0.3 },
+  { nx: 0.55, ny: 0.20 },
 ];
 const SPOT_SEG_DUR = 2.8;
+
+/* The robot is a DIFFERENT illustration than the female (a "machine beneath"
+   reveal, not an X-ray of the same person): its face is larger and sits a bit
+   lower than hers. Both share the eye position, so we anchor the robot at the
+   eye and scale it down a touch — that pulls its longer nose/jaw up onto the
+   woman's face so the two profiles overlap as closely as two artworks allow.
+   ROBOT_EYE is the eye in the robot SOURCE image (0-1); its box position is
+   recomputed per screen size (see coverPoint) so the anchor never drifts.
+   Tune SPOT_ROBOT_SCALE to taste (1 = native size, lower = tighter overlap). */
+const ROBOT_EYE = { x: 0.6, y: 0.19 };
+const SPOT_ROBOT_SCALE = 0.88;
+
+/* Box pixel of a normalized source point (sx,sy) ∈ [0,1]² after the CSS renders
+   the image with `object-fit: cover` and the given object-position. Mirroring
+   the browser's cover math here lets us anchor the robot's scale to a real
+   feature (the eye) at ANY box aspect ratio — a fixed % origin drifts between
+   phone sizes because the cover crop changes with the box's shape. */
+function coverPoint(boxW, boxH, natW, natH, sx, sy, posX = 0.58, posY = 0) {
+  const scale = Math.max(boxW / natW, boxH / natH);
+  const rw = natW * scale;
+  const rh = natH * scale;
+  return { x: (boxW - rw) * posX + sx * rw, y: (boxH - rh) * posY + sy * rh };
+}
 
 export default function HeroSection() {
   const wrapperRef = useRef(null);
@@ -180,7 +203,10 @@ export default function HeroSection() {
     const cx = ox + nx * w;
     const cy = oy + ny * h;
     spot.style.transform = `translate3d(${(cx - R).toFixed(1)}px, ${(cy - R).toFixed(1)}px, 0)`;
-    robot.style.transform = `translate3d(${(ox - cx + R).toFixed(1)}px, ${(oy - cy + R).toFixed(1)}px, 0)`;
+    /* scale() is anchored at the eye (transform-origin set in placeSpot), so the
+       eye stays registered to the portrait while the rest of the robot face is
+       pulled in to match the woman's smaller face. */
+    robot.style.transform = `translate3d(${(ox - cx + R).toFixed(1)}px, ${(oy - cy + R).toFixed(1)}px, 0) scale(${SPOT_ROBOT_SCALE})`;
   }, []);
 
   /* Size + register the mobile spotlight to the portrait box (mount + resize).
@@ -206,6 +232,14 @@ export default function HeroSection() {
     spot.style.height = `${(R * 2).toFixed(1)}px`;
     robot.style.width = `${boxRef.current.w.toFixed(1)}px`;
     robot.style.height = `${boxRef.current.h.toFixed(1)}px`;
+    /* Anchor the scale at the robot's eye for THIS box shape (cover crop varies
+       with the box aspect ratio, which differs on every phone). naturalWidth is
+       0 before the webp loads; the fallback matches the asset, so it's correct
+       either way, and 'load'/'resize' re-run this. */
+    const natW = robot.naturalWidth || 1000;
+    const natH = robot.naturalHeight || 948;
+    const eye = coverPoint(boxRef.current.w, boxRef.current.h, natW, natH, ROBOT_EYE.x, ROBOT_EYE.y);
+    robot.style.transformOrigin = `${eye.x.toFixed(1)}px ${eye.y.toFixed(1)}px`;
   }, []);
 
   useLayoutEffect(() => {
@@ -285,9 +319,19 @@ export default function HeroSection() {
           onUpdate: () => applySpot(spotPt.nx, spotPt.ny),
         });
       }
-      stopObserve = observeInView(hero, (visible) =>
-        visible ? spotTl.play() : spotTl.pause(),
-      );
+      /* Pause BOTH the glide (GSAP) and the liquid-blob morph (CSS mask
+         animation) whenever the hero scrolls out of view — the mask repaint
+         then costs nothing offscreen, which matters on low-end phones. */
+      const spotEl = spotRef.current;
+      stopObserve = observeInView(hero, (visible) => {
+        if (visible) {
+          spotTl.play();
+          if (spotEl) spotEl.style.animationPlayState = "running";
+        } else {
+          spotTl.pause();
+          if (spotEl) spotEl.style.animationPlayState = "paused";
+        }
+      });
     }
     /* mode === "lite": nothing animates; the static portrait shows. */
 
@@ -486,20 +530,15 @@ export default function HeroSection() {
           />
         </div>
 
-        {/* Mobile-only spotlight (data-mode="auto"): a soft-edged circular window
-            that glides along a fixed path, with the robot inside counter-translated
-            so its pixels stay locked to the portrait — a composite-only see-through
+        {/* Mobile-only spotlight (data-mode="auto"): a soft-edged liquid-blob
+            window (metaball mask + slow morph live in globals.css) that glides
+            along a fixed path, with the robot inside counter-translated so its
+            pixels stay locked to the portrait — a composite-only see-through
             reveal (no backdrop-filter, no SVG filters). Hidden on desktop/lite. */}
         <div
           ref={spotRef}
-          className="hero-spot pointer-events-none absolute left-0 top-0 z-[12] overflow-hidden rounded-full"
+          className="hero-spot pointer-events-none absolute left-0 top-0 z-[12] overflow-hidden"
           aria-hidden
-          style={{
-            WebkitMaskImage:
-              "radial-gradient(circle, #000 30%, rgba(0,0,0,0.5) 62%, transparent 100%)",
-            maskImage:
-              "radial-gradient(circle, #000 30%, rgba(0,0,0,0.5) 62%, transparent 100%)",
-          }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {/* Must mirror the mobile female's fit/position (object-cover object-[58%_top])

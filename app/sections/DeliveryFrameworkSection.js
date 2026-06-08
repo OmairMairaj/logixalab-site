@@ -99,7 +99,7 @@ function StepCard({ step, cardRef }) {
   return (
     <li
       ref={cardRef}
-      className="flex w-[clamp(260px,24vw,360px)] shrink-0 snap-center flex-col"
+      className="flex w-[clamp(260px,24vw,360px)] shrink-0 snap-start flex-col"
     >
       <div className="relative h-[clamp(260px,45vh,400px)] w-full overflow-hidden rounded-sm bg-neutral-900">
         <Image
@@ -354,8 +354,9 @@ export default function DeliveryFrameworkSection() {
           />
         </div>
 
-        {/* Top row — heading + intro */}
-        <div className="relative z-10 w-full shrink-0 top-4  gap-6 flex md:justify-between">
+        {/* Top row — heading + intro. Mobile: stack the paragraph below the
+            heading; desktop: side-by-side, spread apart. */}
+        <div className="relative z-10 flex w-full shrink-0 flex-col gap-6 top-4 md:flex-row md:justify-between">
           <h2
             ref={headingRef}
             id="framework-heading"
@@ -373,14 +374,17 @@ export default function DeliveryFrameworkSection() {
           </p>
         </div>
 
-        {/* Card rail viewport — horizontal scroll driven by GSAP on desktop */}
+        {/* Card rail viewport — desktop: GSAP scrubs the rail behind overflow-hidden.
+            Mobile: THIS element is the native scroll container (the <ol> is w-max,
+            so it can't scroll itself) — touch/drag-swipe with snap, bleeding off the
+            right screen edge. */}
         <div
           ref={railViewportRef}
-          className="relative z-10 mt-[clamp(4rem,6vh,3.5rem)] min-h-0 flex-1 overflow-hidden will-change-[opacity,transform] md:-mr-(--gutter) md:pr-0"
+          className="relative z-10 mt-[clamp(4rem,6vh,3.5rem)] min-h-0 -mr-(--gutter) will-change-[opacity,transform] md:flex-1 md:overflow-hidden md:pr-0 max-md:pr-(--gutter) max-md:overflow-x-auto max-md:overflow-y-hidden max-md:overscroll-x-contain max-md:snap-x max-md:snap-mandatory"
         >
           <ol
             ref={railRef}
-            className="flex w-max list-none gap-[clamp(1rem,2vw,1.75rem)] p-0 md:gap-[clamp(1.25rem,2.2vw,2rem)] md:overflow-x-visible md:pl-0 md:pr-[max(2rem,8vw)] max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:pb-4 max-md:scrollbar-thin"
+            className="flex w-max list-none gap-[clamp(1rem,2vw,1.75rem)] p-0 md:gap-[clamp(1.25rem,2.2vw,2rem)] md:overflow-x-visible md:pl-0 md:pr-[max(2rem,8vw)]"
           >
             {STEPS.map((step, i) => (
               <StepCard

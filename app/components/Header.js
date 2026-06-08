@@ -7,25 +7,18 @@ import Link from "next/link";
 import { RandomLetterSwapPingPong } from "@/app/components/random-letter-swap";
 import { NAV_LINKS, SOCIAL_LINKS } from "@/app/lib/constants";
 
-/* Small diagonal arrow that inherits currentColor, so it flips dark when the
-   lime flood sweeps the CTA on hover. */
-function ArrowIcon() {
+/* Black brand logo used inside the white CTA pills — spins 360° on hover via
+   the .header-cta:hover img rule in globals.css. */
+function CtaLogo() {
   return (
-    <svg
-      className="header-cta__arrow"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <Image
+      src="/images/logo-black.png"
+      alt=""
+      width={22}
+      height={22}
+      className="h-[1.2em] w-auto object-contain"
       aria-hidden
-    >
-      <path d="M7 17 17 7" />
-      <path d="M8 7h9v9" />
-    </svg>
+    />
   );
 }
 
@@ -99,9 +92,9 @@ export default function Header() {
         {/* Right side: CTA on desktop, hamburger on mobile */}
         <div className="ml-auto flex items-center">
           {/* Desktop CTA */}
-          <Link href="/contact" className="header-cta hidden md:inline-flex">
+          <Link href="/contact" className="header-cta header-cta--white hidden md:inline-flex">
             <span>Let&apos;s Talk</span>
-            <ArrowIcon />
+            <CtaLogo />
           </Link>
 
           {/* Mobile hamburger — glass pill, bars morph to a lime X.
@@ -148,9 +141,9 @@ export default function Header() {
         </nav>
 
         <div className="mobile-menu__footer">
-          <Link href="/contact" onClick={closeMenu} className="header-cta header-cta--block">
+          <Link href="/contact" onClick={closeMenu} className="header-cta header-cta--white header-cta--block">
             <span>Let&apos;s Talk</span>
-            <ArrowIcon />
+            <CtaLogo />
           </Link>
           <div className="mobile-menu__socials">
             {SOCIAL_LINKS.map((social) => (

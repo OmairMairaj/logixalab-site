@@ -277,7 +277,7 @@ export default function GlobalExperienceSection() {
     >
       <div
         ref={panelRef}
-        className="relative flex min-h-screen flex-col overflow-hidden bg-black py-[clamp(3rem,8vh,5rem)] md:sticky md:top-(--header-offset) md:h-(--viewport-below-header) md:min-h-(--viewport-below-header) md:py-[clamp(1.25rem,3vh,2rem)]"
+        className="relative flex flex-col overflow-hidden bg-black py-[clamp(3rem,8vh,5rem)] md:sticky md:top-(--header-offset) md:h-(--viewport-below-header) md:min-h-(--viewport-below-header) md:py-[clamp(1.25rem,3vh,2rem)]"
       >
         {/* Top row — heading + intro (gutter padding only here) */}
         <div className="relative z-20 flex w-full shrink-0 flex-col mt-8 gap-6 px-(--gutter) md:flex-row md:items-start md:justify-between md:gap-[clamp(2rem,4vw,4rem)]">
@@ -301,7 +301,7 @@ export default function GlobalExperienceSection() {
         {/* World map + markers — full viewport width, full image visible (1244×698) */}
         <div
           ref={mapRef}
-          className="relative z-10 flex min-h-0 w-screen mt-24 top-24 max-w-[100vw] flex-1 flex-col justify-end will-change-[opacity,transform]"
+          className="relative z-10 flex min-h-0 w-screen mt-10 max-w-[100vw] flex-col justify-end will-change-[opacity,transform] md:mt-24 md:top-24 md:flex-1"
         >
           <div
             className="relative mx-auto"
