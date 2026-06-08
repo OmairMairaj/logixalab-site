@@ -7,9 +7,6 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HEADING_GRADIENT =
-  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
-
 const INTRO_COPY =
   "We have delivered enterprise platforms, AI solutions, and digital products for clients across the United States, Canada, Australia, Germany, the UAE, Saudi Arabia, the Netherlands, and Pakistan—bringing global expertise and proven execution to every project.";
 
@@ -287,13 +284,7 @@ export default function GlobalExperienceSection() {
           <h2
             ref={headingRef}
             id="global-experience-heading"
-            className="font-heading text-[clamp(2rem,4.5vw,4rem)] font-normal leading-[1.04] tracking-[-0.02em] will-change-[opacity,transform,filter]"
-            style={{
-              backgroundImage: HEADING_GRADIENT,
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
+            className="font-heading text-[clamp(2rem,4.5vw,4rem)] font-normal leading-[1.04] tracking-[-0.02em] text-hero-gradient will-change-[opacity,transform,filter]"
           >
             Global
             <br />
@@ -323,7 +314,7 @@ export default function GlobalExperienceSection() {
             }}
           >
             <Image
-              src="/images/world-map.png"
+              src="/images/world-map.webp"
               alt=""
               fill
               className="object-cover object-center"

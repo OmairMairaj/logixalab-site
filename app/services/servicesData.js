@@ -13,7 +13,7 @@ export const SERVICES = [
       "We design and engineer the core systems your business depends on — ERPs, CRMs, customer portals, and multi-tenant SaaS platforms — with architecture that holds up as your users, data, and teams multiply.",
       "Every platform is built in-house by one integrated team, with security, observability, and maintainability designed in from day one, so you're never boxed in by technical debt.",
     ],
-    image: "/images/capabilities/cap-enterprise.png",
+    image: "/images/capabilities/cap-enterprise.webp",
     highlights: ["Multi-tenant by design", "Enterprise-grade security", "Engineered for long-term growth"],
     capabilities: [
       { title: "Multi-tenant SaaS", desc: "Isolated, scalable tenancy with per-customer data, billing, and configuration." },
@@ -34,7 +34,7 @@ export const SERVICES = [
       "We build AI into the places it earns its keep: LLM-powered assistants, retrieval systems over your own data, and automation pipelines that take repetitive work off your team's plate.",
       "From prompt and retrieval design to evaluation, guardrails, and monitoring, we engineer AI for the realities of production — accuracy, cost, latency, and trust.",
     ],
-    image: "/images/capabilities/cap-ai-automation.png",
+    image: "/images/capabilities/cap-ai-automation.webp",
     highlights: ["Grounded in your data", "Built for production", "Measured, safe, monitored"],
     capabilities: [
       { title: "LLM & conversational AI", desc: "Assistants and copilots grounded in your domain and tone of voice." },
@@ -55,7 +55,7 @@ export const SERVICES = [
       "We craft cross-platform and native mobile apps with the polish users expect and the architecture your roadmap needs — fluid interfaces, offline-first data, and seamless integration with your backend.",
       "One team owns the whole stack, so your app, APIs, and infrastructure move together from prototype to store release and beyond.",
     ],
-    image: "/images/capabilities/cap-mobile.png",
+    image: "/images/capabilities/cap-mobile.webp",
     highlights: ["Native feel, faster ship", "Offline-first data", "One team, full stack"],
     capabilities: [
       { title: "Cross-platform apps", desc: "One codebase for iOS and Android with native-grade performance." },
@@ -76,7 +76,7 @@ export const SERVICES = [
       "We pair product research with design-systems thinking and creative engineering to turn complex capabilities into interfaces that feel effortless and on-brand.",
       "From prototypes to motion design to production-ready components, we make sure what's designed is exactly what ships.",
     ],
-    image: "/images/capabilities/cap-uiux.png",
+    image: "/images/capabilities/cap-uiux.webp",
     highlights: ["Research to pixels", "Design-system driven", "Motion with purpose"],
     capabilities: [
       { title: "Product & UX research", desc: "Flows, wireframes, and testing that de-risk decisions early." },
@@ -97,7 +97,7 @@ export const SERVICES = [
       "We build the cloud foundation your product depends on — infrastructure as code, automated delivery, and deep observability — so releases are routine and uptime is a given.",
       "Whether AWS, Azure, GCP, or hybrid, we engineer for resilience, security, and cost-efficiency at enterprise scale.",
     ],
-    image: "/images/capabilities/cap-cloud.png",
+    image: "/images/capabilities/cap-cloud.webp",
     highlights: ["Deploy without drama", "Self-healing scale", "Enterprise-grade uptime"],
     capabilities: [
       { title: "Infrastructure as code", desc: "Reproducible environments with Terraform and pipelines." },
@@ -118,7 +118,7 @@ export const SERVICES = [
       "We help you see and act on what your data is telling you — from predictive models to live operational dashboards that put the right numbers in front of the right people.",
       "We own the full lifecycle: pipelines, feature stores, model training and deployment, and the BI layer your teams use every day.",
     ],
-    image: "/images/capabilities/cap-data-science.png",
+    image: "/images/capabilities/cap-data-science.webp",
     highlights: ["Data to decisions", "Full ML lifecycle", "Dashboards people use"],
     capabilities: [
       { title: "Predictive analytics", desc: "Forecasting and models that inform real business decisions." },

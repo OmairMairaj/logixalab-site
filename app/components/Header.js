@@ -1,27 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
+import { RandomLetterSwapPingPong } from "@/app/components/random-letter-swap";
+import { NAV_LINKS, SOCIAL_LINKS } from "@/app/lib/constants";
 
-const navLinks = [
-  { label: "Services", href: "/services" },
-  { label: "Work", href: "/work" },
-  { label: "Team", href: "/team" },
-];
+/* Small diagonal arrow that inherits currentColor, so it flips dark when the
+   lime flood sweeps the CTA on hover. */
+function ArrowIcon() {
+  return (
+    <svg
+      className="header-cta__arrow"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7 17 17 7" />
+      <path d="M8 7h9v9" />
+    </svg>
+  );
+}
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+
+  /* While the mobile menu is open: lock background scroll and close on Escape. */
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const root = document.documentElement;
+    const prevOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      root.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   return (
     <header className="fixed inset-x-0 top-2 z-50 w-full">
-      {/* Main bar */}
-      <div className="relative mx-auto flex h-[var(--header-h)] items-center px-[var(--gutter)]">
-
+      {/* Main bar — sits above the menu overlay so the logo + toggle stay live */}
+      <div className="relative z-20 mx-auto flex h-[var(--header-h)] items-center px-[var(--gutter)]">
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center">
+        <Link href="/" className="flex shrink-0 items-center" onClick={closeMenu}>
           <Image
             src="/images/logo-white-full.png"
             alt="Logixa Lab"
@@ -47,7 +80,7 @@ export default function Header() {
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.1)",
             }}
           >
-            {navLinks.map((link) => (
+            {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -67,83 +100,72 @@ export default function Header() {
         <div className="ml-auto flex items-center">
           {/* Desktop CTA */}
           <Link href="/contact" className="header-cta hidden md:inline-flex">
-            <span>Let's Talk</span>
-            <Image
-              src="/images/logo-black.png"
-              alt=""
-              width={22}
-              height={22}
-              className="h-[1.2em] w-auto object-contain"
-              aria-hidden
-            />
+            <span>Let&apos;s Talk</span>
+            <ArrowIcon />
           </Link>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — glass pill, bars morph to a lime X.
+              suppressHydrationWarning: some browser extensions (password
+              managers / autofill) inject attributes like `fdprocessedid` onto
+              buttons before hydration, which otherwise trips a mismatch error.
+              Same pattern the contact form uses. */}
           <button
+            type="button"
             onClick={() => setMenuOpen((prev) => !prev)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-white/65 transition-colors hover:text-white md:hidden"
+            className="nav-toggle md:hidden"
+            suppressHydrationWarning
           >
-            {menuOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            )}
+            <span className="nav-toggle__box" aria-hidden>
+              <span className="nav-toggle__bar" />
+              <span className="nav-toggle__bar" />
+              <span className="nav-toggle__bar" />
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Mobile dropdown */}
-      {menuOpen && (
-        <div className="fixed inset-x-0 top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/10 bg-black/92 backdrop-blur-md md:hidden">
-          <nav
-            className="mx-auto flex max-w-screen-xl flex-col gap-1 px-4 py-4 sm:px-6"
-            aria-label="Mobile navigation"
-          >
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-xl px-4 py-3 text-sm font-medium text-white/65 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none"
-              >
-                <RandomLetterSwapPingPong
-                  label={link.label}
-                  className="text-inherit"
-                  staggerDuration={0.025}
-                />
-              </Link>
-            ))}
+      {/* Mobile menu — always mounted (so it can animate both ways); a circular
+          reveal expands from the hamburger, then links blur-rise in. */}
+      <div
+        className={`mobile-menu md:hidden ${menuOpen ? "is-open" : ""}`}
+        aria-hidden={!menuOpen}
+        inert={!menuOpen}
+      >
+        <nav className="mobile-menu__nav" aria-label="Mobile navigation">
+          {NAV_LINKS.map((link, i) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={closeMenu}
+              className="mobile-menu__link"
+            >
+              <span className="mobile-menu__index">{`0${i + 1}`}</span>
+              <span>{link.label}</span>
+            </Link>
+          ))}
+        </nav>
 
-            <div className="mt-3 border-t border-white/10 pt-4">
-              <Link
-                href="/contact"
-                onClick={() => setMenuOpen(false)}
-                className="header-contact-btn"
+        <div className="mobile-menu__footer">
+          <Link href="/contact" onClick={closeMenu} className="header-cta header-cta--block">
+            <span>Let&apos;s Talk</span>
+            <ArrowIcon />
+          </Link>
+          <div className="mobile-menu__socials">
+            {SOCIAL_LINKS.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <span className="header-contact-btn__icon" aria-hidden>
-                  <Image
-                    src="/images/Icon Gradient.png"
-                    alt=""
-                    width={26}
-                    height={25}
-                    className="header-contact-btn__icon-img"
-                  />
-                </span>
-                <span className="relative z-1">Let&apos;s Talk</span>
-              </Link>
-            </div>
-          </nav>
+                {social.label}
+              </a>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

@@ -7,9 +7,6 @@ import { useId, useLayoutEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HEADING_GRADIENT =
-  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
-
 const STROKE_GRADIENT_STOPS = [
   { offset: "0%", color: "#7DFF00" },
   { offset: "49%", color: "#B2FF00" },
@@ -58,43 +55,43 @@ const STEPS = [
     n: "01",
     title: "Forensic Discovery",
     desc: "We begin by understanding your business objectives, user needs, technical requirements, and project constraints. This phase establishes a clear roadmap and removes ambiguity before development begins.",
-    image: "/images/framework/step-01.png",
+    image: "/images/framework/step-01.webp",
   },
   {
     n: "02",
     title: "Architectural Planning",
     desc: "Our team defines the system architecture, technology stack, timelines, and implementation strategy, ensuring every technical decision supports long-term scalability and performance.",
-    image: "/images/framework/step-02.png",
+    image: "/images/framework/step-02.webp",
   },
   {
     n: "03",
     title: "Prototype Engineering",
     desc: "Interactive prototypes and user journeys are created to validate ideas, gather feedback, and refine the experience before investing in full-scale development.",
-    image: "/images/framework/step-03.png",
+    image: "/images/framework/step-03.webp",
   },
   {
     n: "04",
     title: "Agile Sprint Development",
     desc: "The solution is built through iterative development cycles, delivering continuous progress, regular demonstrations, and complete visibility throughout the project.",
-    image: "/images/framework/step-04.png",
+    image: "/images/framework/step-04.webp",
   },
   {
     n: "05",
     title: "Stress Testing & QA",
     desc: "Every feature undergoes comprehensive testing across devices, browsers, and real-world scenarios to ensure reliability, security, and performance.",
-    image: "/images/framework/step-05.png",
+    image: "/images/framework/step-05.webp",
   },
   {
     n: "06",
     title: "Enterprise Deployment",
     desc: "We manage deployment, infrastructure configuration, security, monitoring, and go-live execution to ensure a seamless launch with minimal risk.",
-    image: "/images/framework/step-06.png",
+    image: "/images/framework/step-06.webp",
   },
   {
     n: "07",
     title: "Evolutionary Support",
     desc: "After launch, we continue to monitor, optimize, scale, and enhance your platform, ensuring it evolves alongside your business needs.",
-    image: "/images/framework/step-07.png",
+    image: "/images/framework/step-07.webp",
   },
 ];
 
@@ -116,12 +113,7 @@ function StepCard({ step, cardRef }) {
           <GradientStrokeText strokeWidth={1}>{step.n}</GradientStrokeText>
         </span>
       </div>
-      <h3 className="mt-4 text-[clamp(1.05rem,1.4vw,1.35rem)] font-medium leading-[1.5] tracking-normal" style={{
-              backgroundImage: HEADING_GRADIENT,
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}>
+      <h3 className="mt-4 text-[clamp(1.05rem,1.4vw,1.35rem)] font-medium leading-[1.5] tracking-normal text-hero-gradient">
         <span className="sr-only font-heading">{step.title} </span>
           {step.title}
       </h3>
@@ -245,8 +237,10 @@ export default function DeliveryFrameworkSection() {
         );
 
         /* Phase 4 — content exits, then gray wrapper fades to reveal Global black
-           behind (Hero→Intro / Capabilities→Tools pattern; Delivery z-30 on top). */
-        const EXIT = 0.84;
+           behind (Hero→Intro / Capabilities→Tools pattern; Delivery z-30 on top).
+           EXIT sits AFTER the horizontal scrub (ends 0.94) + a hold, so the last
+           cards fully settle and rest a beat before the section transitions out. */
+        const EXIT = 1.08;
         tl.to(
           [heading, para],
           {
@@ -338,7 +332,7 @@ export default function DeliveryFrameworkSection() {
   return (
     <section
       ref={wrapperRef}
-      className="relative z-30 bg-[#0C0C0C] md:-mt-[32vh] md:h-[520vh]"
+      className="relative z-30 bg-[#0C0C0C] md:-mt-[32vh] md:h-[620vh]"
       aria-labelledby="framework-heading"
     >
       <div
@@ -352,7 +346,7 @@ export default function DeliveryFrameworkSection() {
           aria-hidden
         >
           <Image
-            src="/images/binary.png"
+            src="/images/binary.webp"
             alt=""
             fill
             className="object-contain object-center"
@@ -365,13 +359,7 @@ export default function DeliveryFrameworkSection() {
           <h2
             ref={headingRef}
             id="framework-heading"
-            className="font-heading text-[clamp(2rem,4.5vw,4rem)] font-normal leading-[1.04] tracking-[-0.02em] will-change-[opacity,transform,filter]"
-            style={{
-              backgroundImage: HEADING_GRADIENT,
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
+            className="font-heading text-[clamp(2rem,4.5vw,4rem)] font-normal leading-[1.04] tracking-[-0.02em] text-hero-gradient will-change-[opacity,transform,filter]"
           >
             Our Delivery
             <br />

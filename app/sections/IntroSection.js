@@ -22,6 +22,7 @@
       if (!section || !paragraph) return undefined;
 
       const chars = paragraph.querySelectorAll("[data-intro-char]");
+      const words = paragraph.querySelectorAll("[data-intro-word]");
       if (!chars.length) return undefined;
 
       const mm = gsap.matchMedia();
@@ -84,18 +85,19 @@
       );
 
       /* Mobile: no hero overlap / pin (those classes are md: only) — a simple
-        on-enter decode as the section scrolls into view. */
+        on-enter reveal as the section scrolls into view. Animates the ~40 WORD
+        spans (not ~290 chars) with opacity/translate only — no per-character
+        blur filter, which is the single heaviest scroll cost on low-end phones. */
       mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
         gsap.set(glow, { autoAlpha: 1 });
-        gsap.set(chars, { filter: "blur(10px)", autoAlpha: 0.12, yPercent: 18 });
+        gsap.set(words, { autoAlpha: 0.12, yPercent: 18 });
 
-        const tl = gsap.to(chars, {
-          filter: "blur(0px)",
+        const tl = gsap.to(words, {
           autoAlpha: 1,
           yPercent: 0,
           ease: "power2.out",
           duration: 0.5,
-          stagger: 0.012,
+          stagger: 0.03,
           force3D: true,
           scrollTrigger: {
             trigger: section,
@@ -136,9 +138,10 @@
             aria-hidden
           >
             <Image
-              src="/images/wide-blur.png"
+              src="/images/wide-blur.webp"
               alt=""
               fill
+              priority
               className="object-contain object-bottom mt-20"
               sizes="100vw"
             />
@@ -146,18 +149,19 @@
 
           <p
             ref={paragraphRef}
-            className="relative z-10 flex max-w-[min(80vw,1500px)] flex-wrap justify-center gap-x-[0.32em] font-heading gap-y-2 text-center text-[clamp(1.125rem,2.4vw,4rem)] font-normal leading-[1.2] tracking-[-0.01em] text-white"
+            className="relative z-10 flex max-w-[min(90vw,1660px)] flex-wrap justify-center gap-x-[0.32em] font-heading gap-y-2 text-center text-[clamp(1.125rem,2.4vw,4rem)] font-normal leading-[1.2] tracking-[-0.01em] text-white"
           >
             {INTRO_COPY.split(/\s+/).map((word, wi) => (
               <span
                 key={`intro-w-${wi}`}
+                data-intro-word=""
                 className="inline-block whitespace-nowrap"
               >
                 {word.split("").map((char, ci) => (
                   <span
                     key={`intro-w-${wi}-c-${ci}`}
                     data-intro-char=""
-                    className="inline-block will-change-[filter,opacity,transform]"
+                    className="inline-block"
                   >
                     {char}
                   </span>

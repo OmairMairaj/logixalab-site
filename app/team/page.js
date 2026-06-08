@@ -1,6 +1,5 @@
+import PageBackdrop from "@/app/components/PageBackdrop";
 import TeamScrollExperience from "@/app/sections/TeamScrollExperience";
-import ContactSection from "@/app/sections/ContactSection";
-import Footer from "@/app/components/Footer";
 
 export const metadata = {
   title: "Team",
@@ -10,10 +9,14 @@ export const metadata = {
 
 export default function TeamPage() {
   return (
-    <main className="overflow-x-hidden">
-      <TeamScrollExperience />
-      <ContactSection />
-      <Footer />
+    // Same shell as /work, /services, /contact: hero + content scroll over one
+    // fixed backdrop. The footer rises over the pinned team frame at the end of
+    // the scroll experience (rendered inside TeamScrollExperience).
+    <main className="relative overflow-x-clip text-white">
+      <PageBackdrop />
+      <div className="relative z-10">
+        <TeamScrollExperience />
+      </div>
     </main>
   );
 }

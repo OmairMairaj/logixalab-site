@@ -1,8 +1,6 @@
-import Footer from "@/app/components/Footer";
-import ContactSection from "@/app/sections/ContactSection";
+import PageBackdrop from "@/app/components/PageBackdrop";
 import ServicesHero from "@/app/services/ServicesHero";
 import ServicesShowcase from "@/app/services/ServicesShowcase";
-import ServicesPageBackdrop from "@/app/services/ServicesPageBackdrop";
 
 export const metadata = {
   title: "Services",
@@ -12,16 +10,14 @@ export const metadata = {
 
 export default function ServicesPage() {
   return (
-    <>
-      <main className="relative overflow-x-clip text-white">
-        <ServicesPageBackdrop />
-        <div className="relative z-10">
-          <ServicesHero />
-          <ServicesShowcase />
-          <ContactSection />
-        </div>
-      </main>
-      <Footer />
-    </>
+    // Hero + showcase scroll over one fixed backdrop. The footer rises over the
+    // last pinned service card at the end (rendered inside ServicesShowcase).
+    <main className="relative overflow-x-clip text-white">
+      <PageBackdrop />
+      <div className="relative z-10">
+        <ServicesHero />
+        <ServicesShowcase />
+      </div>
+    </main>
   );
 }

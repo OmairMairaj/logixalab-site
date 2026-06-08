@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowUpRight } from "lucide-react";
 import { useLayoutEffect, useRef } from "react";
 
+import Footer from "@/app/components/Footer";
 import { WORK_PROJECTS } from "@/app/work/workProjectsData";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -38,6 +39,7 @@ export default function WorkProjectShowcase() {
   const leftRefs = useRef([]);
   const rightRefs = useRef([]);
   const imageWrapRefs = useRef([]);
+  const footerRef = useRef(null);
 
   const projectCount = WORK_PROJECTS.length;
 
@@ -49,6 +51,7 @@ export default function WorkProjectShowcase() {
     const lefts = leftRefs.current;
     const rights = rightRefs.current;
     const imgs = imageWrapRefs.current;
+    const footer = footerRef.current;
 
     for (let i = 0; i < projectCount; i++) {
       if (!slides[i] || !lefts[i] || !rights[i] || !imgs[i]) return;
@@ -78,7 +81,8 @@ export default function WorkProjectShowcase() {
           start: "top top",
           end: () => {
             const base = typeof window !== "undefined" && window.innerWidth < 768 ? 120 : 160;
-            return `+=${base + projectCount * 100}%`;
+            /* +120% gives the footer room to rise over the last pinned project. */
+            return `+=${base + projectCount * 100 + 120}%`;
           },
           pin: true,
           scrub: 1.05,
@@ -131,6 +135,13 @@ export default function WorkProjectShowcase() {
           );
         }
       }
+
+      /* Footer rises over the last pinned project: the section stays pinned for
+         one extra beat while <Footer/> slides up from below to close the page. */
+      if (footer) {
+        tl.set(footer, { yPercent: 100 }, 0);
+        tl.to(footer, { yPercent: 0, duration: 1.3, ease: "none" }, projectCount * SEGMENT);
+      }
     }, section);
 
     return () => ctx.revert();
@@ -147,7 +158,7 @@ export default function WorkProjectShowcase() {
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
           {/* <div className="absolute right-[-100px] top-[200px] h-[50vh] w-[40vw] -translate-y-1/2 opacity-[0.9]">
             <Image
-              src="/images/binary.png"
+              src="/images/binary.webp"
               alt=""
               fill
               className="object-contain object-left"
@@ -156,7 +167,7 @@ export default function WorkProjectShowcase() {
           </div> */}
           <div className="absolute bottom-[60px] left-[60px] h-[50vh] w-[46vw] opacity-[0.9]">
             <Image
-              src="/images/binary.png"
+              src="/images/binary.webp"
               alt=""
               fill
               className="object-contain object-left-bottom"
@@ -250,6 +261,18 @@ export default function WorkProjectShowcase() {
             </div>
           </article>
         ))}
+      </div>
+
+      {/* Footer — desktop: a clip layer over the pinned section; the inner panel
+          slides up from below (driven by the timeline). Mobile + reduced-motion:
+          plain block that flows below the stacked projects. */}
+      <div className="motion-safe:md:pointer-events-none motion-safe:md:absolute motion-safe:md:inset-0 motion-safe:md:z-40 motion-safe:md:overflow-hidden">
+        <div
+          ref={footerRef}
+          className="w-full will-change-transform motion-safe:md:pointer-events-auto motion-safe:md:absolute motion-safe:md:inset-x-0 motion-safe:md:bottom-0 motion-safe:md:h-[70vh]"
+        >
+          <Footer />
+        </div>
       </div>
     </section>
   );

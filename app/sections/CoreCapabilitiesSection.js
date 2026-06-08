@@ -12,37 +12,34 @@ const CAPABILITIES = [
   {
     title: "Enterprise Platform Engineering",
     desc: "Custom enterprise platforms, ERP systems, CRMs, customer portals, and scalable SaaS applications engineered for long-term growth.",
-    image: "/images/capabilities/cap-enterprise.png",
+    image: "/images/capabilities/cap-enterprise.webp",
   },
   {
     title: "AI & Automation Engineering",
     desc: "LLM integrations, conversational AI, AI-powered workflows, RAG systems, and intelligent automation pipelines built for production environments.",
-    image: "/images/capabilities/cap-ai-automation.png",
+    image: "/images/capabilities/cap-ai-automation.webp",
   },
   {
     title: "Mobile App Development",
     desc: "Cross-platform and native mobile applications for iOS and Android with seamless backend integration and scalable architecture.",
-    image: "/images/capabilities/cap-mobile.png",
+    image: "/images/capabilities/cap-mobile.webp",
   },
   {
     title: "UI/UX & Creative Engineering",
     desc: "Conversion-focused interfaces, interactive prototypes, motion design, branding systems, and immersive digital experiences.",
-    image: "/images/capabilities/cap-uiux.png",
+    image: "/images/capabilities/cap-uiux.webp",
   },
   {
     title: "Cloud Infrastructure & Reliability",
     desc: "AWS, Azure, Kubernetes, CI/CD pipelines, deployment automation, and scalable infrastructure built for enterprise-grade performance.",
-    image: "/images/capabilities/cap-cloud.png",
+    image: "/images/capabilities/cap-cloud.webp",
   },
   {
     title: "Data Science & Business Intelligence",
     desc: "Predictive analytics, machine learning systems, live operational dashboards, and data-driven business intelligence solutions.",
-    image: "/images/capabilities/cap-data-science.png",
+    image: "/images/capabilities/cap-data-science.webp",
   },
 ];
-
-const HEADING_GRADIENT =
-  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
 
 export default function CoreCapabilitiesSection() {
   const wrapperRef = useRef(null);
@@ -238,7 +235,7 @@ export default function CoreCapabilitiesSection() {
           aria-hidden
         >
           <Image
-            src="/images/binary.png"
+            src="/images/binary.webp"
             alt=""
             fill
             className="object-contain object-left-bottom"
@@ -286,13 +283,7 @@ export default function CoreCapabilitiesSection() {
             <h2
               ref={headingRef}
               id="capabilities-heading"
-              className="font-heading text-[clamp(2.25rem,4.8vw,4.25rem)] font-normal leading-[1.04] tracking-[-0.02em] will-change-[opacity,transform]"
-              style={{
-                backgroundImage: HEADING_GRADIENT,
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
+              className="font-heading text-[clamp(2.25rem,4.8vw,4.25rem)] font-normal leading-[1.04] tracking-[-0.02em] text-hero-gradient will-change-[opacity,transform]"
             >
               Our Core
               <br />

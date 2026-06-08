@@ -1,28 +1,45 @@
 "use client";
 
 import Image from "next/image";
+import { observeInView } from "@/app/lib/inView";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLayoutEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HEADING_GRADIENT =
-  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
-
-/* Single edit point for the icon set. Drop matching PNGs (≈500×500, transparent
-   background) into public/images/tools/ and add/rename entries here. */
+/* Single edit point for the icon set. Each tool ships TWO PNGs in
+   public/images/tools/: a brand-color one (`color`) and a white silhouette
+   (`white`, usually the `-white` suffix). The chip shows white by default and
+   crossfades to color on hover (desktop) / in the center scan-zone (touch).
+   Tailwind is the only odd pair: tailwind.png = color, tailwind-css.png = white. */
 const TOOLS = [
-  { name: "Next.js", src: "/images/tools/nextjs.png" },
-  { name: "ChatGPT", src: "/images/tools/chatgpt.png" },
-  { name: "Claude", src: "/images/tools/claude.png" },
-  { name: "Gemini", src: "/images/tools/gemini.png" },
-  { name: "Python", src: "/images/tools/python.png" },
-  { name: "Cursor", src: "/images/tools/cursor.png" },
-  { name: "Seedance", src: "/images/tools/seedance.png" },
+  { name: "Anthropic", color: "/images/tools/anthropic.png", white: "/images/tools/anthropic-white.png" },
+  { name: "OpenAI", color: "/images/tools/open-ai.png", white: "/images/tools/open-ai-white.png" },
+  { name: "Gemini", color: "/images/tools/gemini.png", white: "/images/tools/gemini-white.png" },
+  { name: "Hugging Face", color: "/images/tools/hugging-face.png", white: "/images/tools/hugging-face-white.png" },
+  { name: "PyTorch", color: "/images/tools/pytorch.png", white: "/images/tools/pytorch-white.png" },
+  { name: "Seedance", color: "/images/tools/seedance.png", white: "/images/tools/seedance-white.png" },
+  { name: "Python", color: "/images/tools/python.png", white: "/images/tools/python-white.png" },
+  { name: "React", color: "/images/tools/react.png", white: "/images/tools/react-white.png" },
+  { name: "Next.js", color: "/images/tools/nextjs.png", white: "/images/tools/nextjs-white.png" },
+  { name: "Node.js", color: "/images/tools/node.png", white: "/images/tools/node-white.png" },
+  { name: "TypeScript", color: "/images/tools/typescript.png", white: "/images/tools/typescript-white.png" },
+  { name: "Swift", color: "/images/tools/swift.png", white: "/images/tools/swift-white.png" },
+  { name: "GraphQL", color: "/images/tools/graphql.png", white: "/images/tools/graphql-white.png" },
+  { name: "Tailwind CSS", color: "/images/tools/tailwind.png", white: "/images/tools/tailwind-css.png" },
+  { name: "GSAP", color: "/images/tools/gsap.png", white: "/images/tools/gsap-white.png" },
+  { name: "AWS", color: "/images/tools/aws.png", white: "/images/tools/aws-white.png" },
+  { name: "Azure", color: "/images/tools/azure.png", white: "/images/tools/azure-white.png" },
+  { name: "Vercel", color: "/images/tools/vercel.png", white: "/images/tools/vercel-white.png" },
+  { name: "Docker", color: "/images/tools/docker.png", white: "/images/tools/docker-white.png" },
+  { name: "Kubernetes", color: "/images/tools/kubernetes.png", white: "/images/tools/kubernetes-white.png" },
+  { name: "Terraform", color: "/images/tools/terraform.png", white: "/images/tools/terraform-white.png" },
+  { name: "PostgreSQL", color: "/images/tools/postgresql.png", white: "/images/tools/postgresql-white.png" },
+  { name: "Redis", color: "/images/tools/redis.png", white: "/images/tools/redis-white.png" },
+  { name: "Cursor", color: "/images/tools/cursor.png", white: "/images/tools/cursor-white.png" },
+  { name: "Figma", color: "/images/tools/figma.png", white: "/images/tools/figma-white.png" },
 ];
-
-const DEFAULT_CHIP_FILTER = "grayscale(1) brightness(0.85)";
 
 /* Repeat the set until it comfortably overflows a viewport, then the rendered
    list duplicates it once more so the -50% loop stays seamless with no gap. */
@@ -46,7 +63,45 @@ export default function ToolsSection() {
   const marqueeRef = useRef(null);
   const rafRef = useRef(0);
   const velTargetRef = useRef(1); // target marquee timeScale, eased back to 1 when idle
-  const scanActiveRef = useRef(false);
+  const hoverPausedRef = useRef(false); // marquee pauses while a chip is hovered
+
+  /* Branded name tooltip. It's a single position:fixed element rendered at the
+     panel level (NOT inside the overflow-hidden marquee viewport, which would
+     clip it) and parked under the hovered chip by an rAF that tracks the chip's
+     live rect — so it stays glued while the marquee eases to its paused stop and
+     never clips at the rail edges. */
+  const tooltipRef = useRef(null);
+  const tipChipRef = useRef(null);
+  const tipRafRef = useRef(0);
+
+  const positionTip = () => {
+    const chip = tipChipRef.current;
+    const tip = tooltipRef.current;
+    if (chip && tip) {
+      const r = chip.getBoundingClientRect();
+      tip.style.left = `${r.left + r.width / 2}px`;
+      tip.style.top = `${r.bottom + 10}px`;
+    }
+    tipRafRef.current = requestAnimationFrame(positionTip);
+  };
+
+  const showTip = (name, chip) => {
+    // Hover-driven only — touch has no hover and reveals color via the center zone.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    const tip = tooltipRef.current;
+    if (!tip) return;
+    tip.textContent = name;
+    tipChipRef.current = chip;
+    cancelAnimationFrame(tipRafRef.current);
+    positionTip();
+    tip.classList.add("is-visible");
+  };
+
+  const hideTip = () => {
+    cancelAnimationFrame(tipRafRef.current);
+    tipChipRef.current = null;
+    tooltipRef.current?.classList.remove("is-visible");
+  };
 
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current;
@@ -64,6 +119,23 @@ export default function ToolsSection() {
       ease: "none",
       duration: reduce ? 70 : 36,
     });
+
+    /* Pause the marquee + every per-frame loop in this section whenever it's
+       scrolled out of view. Each gated rAF registers a restart fn here and bails
+       (its raf id → 0) when offscreen; becoming visible re-kicks them. */
+    const visibleRef = { current: true };
+    const restartFns = new Set();
+    const onVisibility = (v) => {
+      if (v === visibleRef.current) return;
+      visibleRef.current = v;
+      if (v) {
+        marqueeRef.current?.play();
+        restartFns.forEach((fn) => fn());
+      } else {
+        marqueeRef.current?.pause();
+      }
+    };
+    const stopObserve = observeInView(wrapper, onVisibility);
 
     const mm = gsap.matchMedia();
 
@@ -103,7 +175,6 @@ export default function ToolsSection() {
             onUpdate: (self) => {
               const v = self.getVelocity();
               velTargetRef.current = gsap.utils.clamp(-4, 6, 1 + v / 1400);
-              scanActiveRef.current = self.progress > 0.63 && self.progress < 0.91;
             },
           },
         });
@@ -143,7 +214,7 @@ export default function ToolsSection() {
         );
         tl.to(beam, { autoAlpha: 0, duration: 0.05 }, REVEAL + 0.2);
 
-        /* Hold (~0.65 → ~0.91): timeline idle — marquee + scan-zone run in rAF. */
+        /* Hold (~0.65 → ~0.91): timeline idle — marquee runs in rAF. */
 
         /* Exit (~0.94 → 1.0): fly out before Delivery rises in (Delivery -mt
            is tuned so its slide-over starts ~progress 0.9 on this wrapper). */
@@ -174,49 +245,62 @@ export default function ToolsSection() {
         );
         tl.to(glows, { autoAlpha: 0, ease: "none", duration: 0.2 }, EXIT);
 
-        /* rAF: ease the marquee timeScale toward the velocity target (back to 1
-           when idle) and run the center scan-zone colorize. */
+        /* Pause the marquee while the pointer is over the rail so a chip can be
+           hovered (a moving target is impossible to land on) — color reveal on
+           the chip itself is pure CSS :hover. We reuse the velocity easing by
+           steering the timeScale target to 0 while paused. Only wire this for
+           real hover pointers: a touch tablet (≥768px) fires mouseenter on tap
+           but may never fire mouseleave, which would strand the marquee paused. */
+        const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        const onEnter = () => {
+          hoverPausedRef.current = true;
+        };
+        const onLeave = () => {
+          hoverPausedRef.current = false;
+        };
+        if (canHover) {
+          viewport?.addEventListener("mouseenter", onEnter);
+          viewport?.addEventListener("mouseleave", onLeave);
+        }
+
+        /* rAF: ease the marquee timeScale toward its target — 0 while hovered,
+           otherwise the scroll-velocity value that decays back to 1 when idle.
+           Bails (and stops rescheduling) while the section is offscreen. */
         const tick = () => {
+          if (!visibleRef.current) {
+            rafRef.current = 0;
+            return;
+          }
           const mq = marqueeRef.current;
           if (mq) {
-            const next = mq.timeScale() + (velTargetRef.current - mq.timeScale()) * 0.07;
+            const target = hoverPausedRef.current ? 0 : velTargetRef.current;
+            const next = mq.timeScale() + (target - mq.timeScale()) * 0.08;
             mq.timeScale(next);
           }
           velTargetRef.current += (1 - velTargetRef.current) * 0.05;
-
-          if (scanActiveRef.current && viewport) {
-            const vp = viewport.getBoundingClientRect();
-            const centerX = vp.left + vp.width / 2;
-            const reach = vp.width * 0.26;
-            for (let i = 0; i < chips.length; i += 1) {
-              const chip = chips[i];
-              const r = chip.getBoundingClientRect();
-              const d = Math.abs(r.left + r.width / 2 - centerX);
-              const t = gsap.utils.clamp(0, 1, 1 - d / reach);
-              chip.style.filter = `grayscale(${1 - t}) brightness(${0.85 + t * 0.45}) drop-shadow(0 0 ${t * 16}px rgba(204,255,0,${t * 0.5}))`;
-              chip.style.transform = `scale(${1 + t * 0.12})`;
-            }
-          }
           rafRef.current = requestAnimationFrame(tick);
         };
-        rafRef.current = requestAnimationFrame(tick);
+        const startTick = () => {
+          if (!rafRef.current) rafRef.current = requestAnimationFrame(tick);
+        };
+        restartFns.add(startTick);
+        startTick();
 
         return () => {
           cancelAnimationFrame(rafRef.current);
-          chips.forEach((chip) => {
-            chip.style.filter = DEFAULT_CHIP_FILTER;
-            chip.style.transform = "";
-          });
+          rafRef.current = 0;
+          restartFns.delete(startTick);
+          viewport?.removeEventListener("mouseenter", onEnter);
+          viewport?.removeEventListener("mouseleave", onLeave);
+          hoverPausedRef.current = false;
+          marqueeRef.current?.timeScale(1);
         };
       },
     );
 
-    /* ---------- Mobile: natural height, one-shot reveal, slow loop ---------- */
+    /* ---------- Mobile: natural height, one-shot reveal ---------- */
     mm.add("(max-width: 767px)", () => {
       const heading = headingRef.current;
-      chips.forEach((chip) => {
-        chip.style.filter = "none"; // no scan-zone on mobile → full colour
-      });
 
       const tl = gsap.timeline({
         scrollTrigger: { trigger: wrapper, start: "top 80%", once: true },
@@ -228,11 +312,55 @@ export default function ToolsSection() {
       );
     });
 
-    /* ---------- Reduced motion: static + slow loop ---------- */
-    mm.add("(prefers-reduced-motion: reduce)", () => {
-      chips.forEach((chip) => {
-        chip.style.filter = "none";
-      });
+    /* ---------- Touch: center scan-zone colorizes chips as they pass ----------
+       No hover on touch, so the brand color is revealed where the user is
+       looking — the middle of the rail. Each chip's --tool-color is driven by
+       its distance to the viewport center every frame (instant, no transition). */
+    mm.add("(hover: none) and (prefers-reduced-motion: no-preference)", () => {
+      const viewport = viewportRef.current;
+      let raf = 0;
+      const tints = new Array(chips.length);
+      const run = () => {
+        if (!visibleRef.current) {
+          raf = 0;
+          return;
+        }
+        if (viewport) {
+          /* Batch: read ALL rects first, then write ALL styles — one forced
+             layout per frame instead of one per chip (was the worst mobile
+             scroll cost here). */
+          const vp = viewport.getBoundingClientRect();
+          const centerX = vp.left + vp.width / 2;
+          const chipW = chips[0]?.getBoundingClientRect().width || 70;
+          const reach = chipW * 1.3; // ~1 chip fully lit, neighbors fading
+          for (let i = 0; i < chips.length; i += 1) {
+            const r = chips[i].getBoundingClientRect();
+            const d = Math.abs(r.left + r.width / 2 - centerX);
+            tints[i] = gsap.utils.clamp(0, 1, 1 - d / reach);
+          }
+          for (let i = 0; i < chips.length; i += 1) {
+            const t = tints[i];
+            chips[i].style.setProperty("--tool-color", t.toFixed(3));
+            chips[i].style.transform = t > 0.001 ? `scale(${1 + t * 0.1})` : "";
+          }
+        }
+        raf = requestAnimationFrame(run);
+      };
+      const startRun = () => {
+        if (!raf) raf = requestAnimationFrame(run);
+      };
+      restartFns.add(startRun);
+      startRun();
+
+      return () => {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        restartFns.delete(startRun);
+        chips.forEach((chip) => {
+          chip.style.removeProperty("--tool-color");
+          chip.style.transform = "";
+        });
+      };
     });
 
     const refresh = () => ScrollTrigger.refresh();
@@ -243,7 +371,9 @@ export default function ToolsSection() {
     return () => {
       window.removeEventListener("load", refresh);
       window.removeEventListener("resize", refresh);
+      stopObserve();
       cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(tipRafRef.current);
       marqueeRef.current?.kill();
       mm.revert();
     };
@@ -265,7 +395,7 @@ export default function ToolsSection() {
           aria-hidden
         >
           <div ref={glowTopRef} className="relative h-full w-full opacity-65">
-            <Image src="/images/wide-blur.png" alt="" fill className="object-contain object-center" sizes="100vw" />
+            <Image src="/images/wide-blur.webp" alt="" fill className="object-contain object-center" sizes="100vw" />
           </div>
         </div>
         <div
@@ -273,7 +403,7 @@ export default function ToolsSection() {
           aria-hidden
         >
           <div ref={glowBottomRef} className="relative h-full w-full opacity-65">
-            <Image src="/images/wide-blur.png" alt="" fill className="object-contain object-center" sizes="100vw" />
+            <Image src="/images/wide-blur.webp" alt="" fill className="object-contain object-center" sizes="100vw" />
           </div>
         </div>
 
@@ -290,22 +420,16 @@ export default function ToolsSection() {
         />
 
         {/* Content row: heading | divider | marquee */}
-        <div className="relative z-10 flex w-full flex-col gap-8 md:flex-row md:items-center md:gap-[clamp(1.75rem,3vw,3.25rem)]">
+        <div className="relative z-10 flex w-full flex-col gap-8 md:flex-row md:items-center md:gap-0">
           {/* Heading block */}
-          <div ref={headingRef} className="shrink-0 will-change-[opacity,transform]">
+          <div ref={headingRef} className="shrink-0 will-change-[opacity,transform] md:mr-[clamp(1.75rem,3vw,3.25rem)]">
             <p className="mb-3 flex items-center gap-2 font-sans text-[0.68rem] font-medium uppercase tracking-[0.32em] text-white/40">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-(--hero-accent)" aria-hidden />
               Tech Stack
             </p>
             <h2
               id="tools-heading"
-              className="w-max font-heading text-[clamp(2rem,4.4vw,4rem)] font-normal leading-[1.05] tracking-[-0.02em] whitespace-nowrap"
-              style={{
-                backgroundImage: HEADING_GRADIENT,
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
+              className="w-max font-heading text-[clamp(2rem,4.4vw,4rem)] font-normal leading-[1.05] tracking-[-0.02em] whitespace-nowrap text-hero-gradient"
             >
               Tools
               <br />
@@ -327,13 +451,10 @@ export default function ToolsSection() {
             ref={viewportRef}
             className="relative -mr-(--gutter) min-w-0 flex-1 overflow-hidden will-change-[opacity,transform]"
           >
-            {/* faint centre scan-zone marker */}
+            {/* left edge fade — logos dissolve right at the divider so they read
+                as tucking behind it (the viewport sits flush against the divider) */}
             <div
-              className="pointer-events-none absolute inset-y-0 left-1/2 z-0 hidden w-[150px] -translate-x-1/2 md:block"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(204,255,0,0.07) 45%, rgba(204,255,0,0.07) 55%, transparent)",
-              }}
+              className="pointer-events-none absolute inset-y-0 left-0 z-10 w-[clamp(2rem,6vw,5rem)] bg-linear-to-r from-(--section-canvas) to-transparent"
               aria-hidden
             />
 
@@ -345,7 +466,7 @@ export default function ToolsSection() {
 
             <div
               ref={trackRef}
-              className="flex w-max items-center gap-[clamp(1.1rem,2.2vw,2.25rem)] py-6"
+              className="flex w-max items-center gap-[clamp(1.25rem,2.4vw,2.75rem)] py-6"
             >
               {LOOP.map((tool, i) => (
                 <div
@@ -354,22 +475,36 @@ export default function ToolsSection() {
                     chipRefs.current[i] = el;
                   }}
                   data-tool={tool.name}
-                  title={tool.name}
-                  className="flex h-[clamp(4.25rem,6.5vw,5.75rem)] w-[clamp(4.25rem,6.5vw,5.75rem)] shrink-0 items-center justify-center rounded-full border border-white/10 bg-linear-to-b from-white/[0.07] to-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-sm will-change-[filter,transform]"
-                  style={{ filter: DEFAULT_CHIP_FILTER }}
+                  onMouseEnter={(e) => showTip(tool.name, e.currentTarget)}
+                  onMouseLeave={hideTip}
+                  className="tool-chip flex h-[clamp(5rem,7.5vw,7.5rem)] w-[clamp(5rem,7.5vw,7.5rem)] shrink-0 items-center justify-center rounded-full border border-white/10 bg-linear-to-b from-white/[0.07] to-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] will-change-[transform]"
                 >
-                  <Image
-                    src={tool.src}
-                    alt={tool.name}
-                    width={64}
-                    height={64}
-                    className="h-[52%] w-[52%] object-contain"
-                  />
+                  <span className="relative block h-[60%] w-[60%]">
+                    <Image
+                      src={tool.white}
+                      alt=""
+                      fill
+                      sizes="80px"
+                      className="tool-chip__img tool-chip__img--white object-contain"
+                    />
+                    <Image
+                      src={tool.color}
+                      alt={tool.name}
+                      fill
+                      sizes="80px"
+                      className="tool-chip__img tool-chip__img--color object-contain"
+                    />
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Branded name tooltip — one fixed element parked under the hovered chip
+            (rendered here, outside the overflow-hidden viewport, so it never
+            clips). Position + content are set imperatively in showTip/positionTip. */}
+        <div ref={tooltipRef} className="tool-tip" aria-hidden />
       </div>
     </section>
   );

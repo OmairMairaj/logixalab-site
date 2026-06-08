@@ -1,6 +1,14 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["three", "@react-three/fiber", "@react-three/drei"],
+  /** Pin Turbopack root so module resolution stays in this app when parent dirs have lockfiles. */
+  turbopack: {
+    root: projectRoot,
+  },
 
   /** Hostinger's Node runtime OOMs/times out optimizing large PNGs (and sharp
    *  may be unavailable), which 500s the /_next/image endpoint and breaks the

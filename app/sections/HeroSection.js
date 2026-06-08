@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
+import { RandomLetterSwapPingPong } from "@/app/components/random-letter-swap";
+import { observeInView } from "@/app/lib/inView";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useCallback, useLayoutEffect, useRef } from "react";
@@ -160,9 +161,30 @@ export default function HeroSection() {
     if (!wrapper || !hero || !heading || !portrait || !copy || !bg)
       return undefined;
 
-    /* Seed the always-on blob over the portrait and start the loop immediately,
-       so the liquid-glass lens is visible before the pointer ever moves. */
-    {
+    /* The liquid-glass blob is a fine-pointer DESKTOP effect: it's driven by the
+       cursor (touch can't move it) and continuously recomposites a backdrop-filter
+       + two SVG turbulence/displacement filters every frame. Running it on phones
+       costs heavy GPU for zero interaction, so gate it to capable devices and,
+       even there, pause it whenever the hero is scrolled out of view. */
+    const canRunBlob =
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      window.innerWidth >= 768 &&
+      !reduceMotionRef.current;
+
+    let stopObserve = () => {};
+    const startLoop = () => {
+      if (!rafRef.current) rafRef.current = requestAnimationFrame(stepBlob);
+    };
+    const stopLoop = () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+    };
+
+    if (canRunBlob) {
+      /* Seed the blob over the portrait so the lens is in place before the
+         pointer ever moves, then run it only while the hero is on screen. */
       const hr = hero.getBoundingClientRect();
       const pr = portrait.getBoundingClientRect();
       const cx = pr.left - hr.left + pr.width / 2;
@@ -172,13 +194,17 @@ export default function HeroSection() {
       p.ty = p.y = p.py = cy;
       p.vx = p.vy = 0;
       p.init = true;
-      nodesRef.current = Array.from({ length: NODE_COUNT }, () => ({
-        x: cx,
-        y: cy,
-      }));
+      nodesRef.current = Array.from({ length: NODE_COUNT }, () => ({ x: cx, y: cy }));
+      placeRobot();
+      stopObserve = observeInView(hero, (visible) =>
+        visible ? startLoop() : stopLoop(),
+      );
+    } else {
+      /* Lite path (mobile / touch / reduced-motion): skip the rAF entirely and
+         flag the hero so CSS hides the glass lens + reveal SVG — just the static
+         portrait shows, at a fraction of the cost. */
+      hero.dataset.lite = "1";
     }
-    placeRobot();
-    if (!rafRef.current) rafRef.current = requestAnimationFrame(stepBlob);
 
     const mm = gsap.matchMedia();
 
@@ -276,7 +302,7 @@ export default function HeroSection() {
 
     const refresh = () => {
       ScrollTrigger.refresh();
-      placeRobot();
+      if (canRunBlob) placeRobot();
     };
     requestAnimationFrame(refresh);
     window.addEventListener("load", refresh);
@@ -285,7 +311,9 @@ export default function HeroSection() {
     return () => {
       window.removeEventListener("load", refresh);
       window.removeEventListener("resize", refresh);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      stopObserve();
+      stopLoop();
+      delete hero.dataset.lite;
       mm.revert();
     };
   }, [placeRobot, stepBlob]);
@@ -312,7 +340,7 @@ export default function HeroSection() {
           />
           <div className="absolute left-0 top-0 h-full w-[56vw] -translate-x-1/3">
             <Image
-              src="/images/left.png"
+              src="/images/left.webp"
               alt=""
               fill
               className="object-contain object-left"
@@ -321,7 +349,7 @@ export default function HeroSection() {
           </div>
           <div className="absolute right-0 top-0 z-10 h-[92vh] w-[66vw] translate-x-[30%] -translate-y-[24%]">
             <Image
-              src="/images/right.png"
+              src="/images/right.webp"
               alt=""
               fill
               className="object-contain object-top-right"
@@ -357,7 +385,7 @@ export default function HeroSection() {
           style={{ width: "clamp(260px, 80vw, 800px)" }}
         >
           <Image
-            src="/images/hero-female.png"
+            src="/images/hero-female.webp"
             alt="LogixaLab — Trusted Engineering"
             fill
             className="object-contain object-bottom"
@@ -372,7 +400,7 @@ export default function HeroSection() {
             back to a frosted blur.) */}
         <div
           ref={glassRef}
-          className="pointer-events-none absolute inset-0 z-[12]"
+          className="hero-glass pointer-events-none absolute inset-0 z-[12]"
           aria-hidden
           style={{
             backdropFilter:
@@ -387,7 +415,7 @@ export default function HeroSection() {
             robot revealed over the portrait, and the lime tint / scan shimmer. */}
         <svg
           ref={revealRef}
-          className="pointer-events-none absolute inset-0 z-[13] h-full w-full"
+          className="hero-reveal pointer-events-none absolute inset-0 z-[13] h-full w-full"
           aria-hidden
         >
           <defs>
@@ -482,7 +510,7 @@ export default function HeroSection() {
           {/* Robot — only visible where the blob overlaps the female portrait. */}
           <image
             ref={robotRef}
-            href="/images/hero-robot.png"
+            href="/images/hero-robot.webp"
             x="0"
             y="0"
             width="100"

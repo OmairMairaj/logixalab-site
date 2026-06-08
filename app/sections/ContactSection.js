@@ -3,77 +3,12 @@
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 import Footer from "@/app/components/Footer";
+import ContactFormCard from "@/app/sections/ContactFormCard";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const HEADING_GRADIENT =
-  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
-
-const SERVICE_OPTIONS = [
-  { value: "", label: "Select a service" },
-  { value: "ai-agents", label: "AI Agents & Automation" },
-  { value: "ai-saas", label: "AI SaaS Products" },
-  { value: "custom-dev", label: "Custom Software Development" },
-  { value: "data-ml", label: "Data & ML Engineering" },
-  { value: "cloud", label: "Cloud & DevOps" },
-  { value: "design", label: "Product Design & UX" },
-  { value: "other", label: "Other" },
-];
-
-function UnderlineField({ label, name, type = "text", required, value, onChange, autoComplete, placeholder }) {
-  return (
-    <label data-cf className="block min-w-0 will-change-[opacity,transform]">
-      <span className="block text-[11px] font-medium tracking-[0.06em] text-white/85">{label}</span>
-      <input
-        type={type}
-        name={name}
-        required={required}
-        value={value}
-        onChange={onChange}
-        autoComplete={autoComplete ?? "off"}
-        placeholder={placeholder}
-        className="mt-0.5 block w-full border-0 border-b border-white/35 bg-transparent py-1.5 text-[13px] text-white outline-none transition-colors duration-200 placeholder:text-white/35 focus:border-(--hero-accent)"
-      />
-    </label>
-  );
-}
-
-function UnderlineSelect({ label, name, value, onChange, options, required }) {
-  return (
-    <label data-cf className="block min-w-0 will-change-[opacity,transform]">
-      <span className="block text-[11px] font-medium tracking-[0.06em] text-white/85">{label}</span>
-      <div className="relative mt-0.5">
-        <select
-          name={name}
-          required={required}
-          value={value}
-          onChange={onChange}
-          className="block w-full min-w-0 cursor-pointer appearance-none border-0 border-b border-white/35 bg-transparent py-1.5 pr-8 text-[13px] text-white outline-none transition-colors duration-200 focus:border-(--hero-accent) [&>option]:bg-neutral-900 [&>option]:text-white"
-        >
-          {options.map((opt) => (
-            <option key={opt.value || "empty"} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <span className="pointer-events-none absolute right-0 bottom-2 text-xs text-white/40" aria-hidden>
-          ▾
-        </span>
-      </div>
-    </label>
-  );
-}
-
-const initialValues = {
-  name: "",
-  email: "",
-  phone: "",
-  service: "",
-  message: "",
-};
 
 /**
  * In-page contact card (`#contact`).
@@ -87,23 +22,11 @@ const initialValues = {
  * page must NOT render a separate one.
  */
 export default function ContactSection({ endZone = false }) {
-  const [values, setValues] = useState(initialValues);
-
   const wrapperRef = useRef(null);
   const bgRef = useRef(null);
   const cardGlassRef = useRef(null);
   const cardRef = useRef(null);
   const footerRef = useRef(null);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    /* Wire to backend later. */
-  };
 
   useLayoutEffect(() => {
     /* Only the homepage end-zone runs the pinned seam + footer-slide. The plain
@@ -132,7 +55,9 @@ export default function ContactSection({ endZone = false }) {
         gsap.set(footer, { yPercent: 100 });
 
         const REVEAL = 0.28;
-        const FOOTER_AT = 0.62;
+        /* FOOTER_AT sits well after the fields finish (~0.50) so the completed
+           form rests on screen for a beat before the footer slides up over it. */
+        const FOOTER_AT = 0.84;
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -213,7 +138,7 @@ export default function ContactSection({ endZone = false }) {
   const bgLayer = (
     <div ref={bgRef} className="pointer-events-none absolute inset-0 z-0 will-change-[opacity]">
       <Image
-        src="/images/default-contact-section-bg.jpg"
+        src="/images/default-contact-section-bg.webp"
         alt=""
         fill
         className="object-cover object-right grayscale contrast-[0.92] brightness-[0.3]"
@@ -239,86 +164,7 @@ export default function ContactSection({ endZone = false }) {
         ref={cardRef}
         className="relative z-10 px-6 py-7 sm:px-8 sm:py-9"
       >
-      <h2
-        className="font-heading text-[clamp(1.75rem,3vw,2.5rem)] font-normal leading-[1.12] tracking-[-0.02em] pb-[0.15em]"
-        style={{
-          backgroundImage: HEADING_GRADIENT,
-          WebkitBackgroundClip: "text",
-          backgroundClip: "text",
-          color: "transparent",
-        }}
-      >
-        Let&apos;s Build
-        <br />
-        Together!
-      </h2>
-
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-y-2.5">
-        <UnderlineField
-          label="Name"
-          name="name"
-          required
-          value={values.name}
-          onChange={handleChange}
-          autoComplete="name"
-          placeholder="Your name"
-        />
-        <UnderlineField
-          label="Email"
-          name="email"
-          type="email"
-          required
-          value={values.email}
-          onChange={handleChange}
-          autoComplete="email"
-          placeholder="you@company.com"
-        />
-        <UnderlineField
-          label="Phone"
-          name="phone"
-          type="tel"
-          required={false}
-          value={values.phone}
-          onChange={handleChange}
-          autoComplete="tel"
-          placeholder="+00 000 0000000"
-        />
-        <UnderlineSelect
-          label="Service"
-          name="service"
-          value={values.service}
-          onChange={handleChange}
-          options={SERVICE_OPTIONS}
-          required
-        />
-        <label data-cf className="block min-w-0 will-change-[opacity,transform]">
-          <span className="block text-[11px] font-medium tracking-[0.06em] text-white/85">
-            Message <span className="font-normal text-white/50">(Optional)</span>
-          </span>
-          <textarea
-            name="message"
-            rows={4}
-            value={values.message}
-            onChange={handleChange}
-            placeholder="How can we help?"
-            className="mt-0.5 block max-h-24 min-h-16 w-full resize-y border-0 border-b border-white/35 bg-transparent py-1.5 text-[13px] leading-relaxed text-white outline-none transition-colors duration-200 placeholder:text-white/35 focus:border-(--hero-accent)"
-          />
-        </label>
-
-        <div data-cf className="flex justify-center pt-4 will-change-[opacity,transform]">
-          <button type="submit" className="header-cta header-cta--lime" aria-label="Submit">
-            <Image
-              src="/images/logo-black.png"
-              alt=""
-              width={22}
-              height={22}
-              className="h-[1.2em] w-auto object-contain"
-              aria-hidden
-            />
-            <span>Submit</span>
-          </button>
-        </div>
-      </form>
+        <ContactFormCard />
       </div>
     </div>
   );
@@ -329,7 +175,7 @@ export default function ContactSection({ endZone = false }) {
       <section
         id="contact"
         ref={wrapperRef}
-        className="relative z-10 scroll-mt-20 bg-black md:-mt-[150vh] md:h-[320vh]"
+        className="relative z-10 scroll-mt-20 bg-black md:-mt-[150vh] md:h-[380vh]"
       >
         <div className="relative overflow-hidden md:sticky md:top-0 md:flex md:h-screen md:items-center md:justify-center">
           {bgLayer}

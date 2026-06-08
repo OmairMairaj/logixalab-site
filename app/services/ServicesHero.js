@@ -1,40 +1,19 @@
 "use client";
 
-import gsap from "gsap";
-import { useLayoutEffect, useRef } from "react";
+import { useRef } from "react";
 
-const HEADING_GRADIENT =
-  "linear-gradient(105deg, #7DFF00 0%, #B2FF00 49%, #C8FF00 100%)";
+import HeroEyebrow from "@/app/components/HeroEyebrow";
+import ScrollCue from "@/app/components/ScrollCue";
+import useHeroEntrance from "@/app/hooks/useHeroEntrance";
 
+/**
+ * Services hero — same pattern as the /work + /contact heroes: eyebrow, two-line
+ * Michroma display (lime-gradient first line over white), paragraph + "scroll to
+ * explore" row, bottom-anchored with a blur-rise stagger entrance.
+ */
 export default function ServicesHero() {
   const rootRef = useRef(null);
-
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return undefined;
-
-    const items = root.querySelectorAll("[data-hero]");
-    const mm = gsap.matchMedia();
-
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.set(items, { autoAlpha: 0, y: 28, filter: "blur(8px)" });
-      gsap.to(items, {
-        autoAlpha: 1,
-        y: 0,
-        filter: "blur(0px)",
-        ease: "power3.out",
-        duration: 0.8,
-        stagger: 0.12,
-        delay: 0.1,
-      });
-    });
-
-    mm.add("(prefers-reduced-motion: reduce)", () => {
-      gsap.set(items, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-    });
-
-    return () => mm.revert();
-  }, []);
+  useHeroEntrance(rootRef);
 
   return (
     <section
@@ -43,13 +22,7 @@ export default function ServicesHero() {
       aria-labelledby="services-hero-heading"
     >
       <div className="relative z-10 w-full">
-        <p
-          data-hero
-          className="mb-5 flex items-center gap-2 font-sans text-[0.7rem] font-medium uppercase tracking-[0.34em] text-white/45 will-change-[opacity,transform,filter]"
-        >
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-(--hero-accent)" aria-hidden />
-          What we do
-        </p>
+        <HeroEyebrow label="What we do" />
 
         <h1
           id="services-hero-heading"
@@ -57,13 +30,7 @@ export default function ServicesHero() {
         >
           <span
             data-hero
-            className="block pb-[0.08em] will-change-[opacity,transform,filter]"
-            style={{
-              backgroundImage: HEADING_GRADIENT,
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
+            className="block pb-[0.08em] text-hero-gradient will-change-[opacity,transform,filter]"
           >
             AI Solutions
           </span>
@@ -77,18 +44,13 @@ export default function ServicesHero() {
             data-hero
             className="max-w-[52ch] text-[clamp(0.9rem,1.1vw,1.05rem)] leading-relaxed text-white/70 will-change-[opacity,transform,filter]"
           >
-            At LogixaLab we&apos;re a collective of engineers, designers, and AI
-            specialists building intelligent systems that shape how modern
-            businesses operate — every solution engineered in-house, end to end.
+            From enterprise platforms and production AI to mobile, design,
+            cloud, and data — we build the systems modern businesses run on.
+            Every one is engineered in-house, end to end, and designed to scale
+            from day one.
           </p>
 
-          <p
-            data-hero
-            className="flex items-center gap-2 self-start font-sans text-[0.7rem] font-medium uppercase tracking-[0.28em] text-white/40 will-change-[opacity,transform,filter] md:self-auto"
-          >
-            Scroll to explore
-            <span className="inline-block h-4 w-px animate-pulse bg-(--hero-accent)/70" aria-hidden />
-          </p>
+          <ScrollCue className="self-start md:self-auto" />
         </div>
       </div>
     </section>

@@ -2,21 +2,8 @@
 
 import Link from "next/link";
 
-import { RandomLetterSwapPingPong } from "@/components/ui/random-letter-swap";
-
-const navLinks = [
-  { label: "Services", href: "/services" },
-  { label: "Work", href: "/work" },
-  { label: "Team", href: "/team" },
-  { label: "Blog", href: "/#blog" },
-];
-
-const socialLinks = [
-  { label: "Facebook", href: "https://facebook.com" },
-  { label: "Linkedin", href: "https://linkedin.com" },
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "Behance", href: "https://behance.net" },
-];
+import { RandomLetterSwapPingPong } from "@/app/components/random-letter-swap";
+import { FOOTER_NAV_LINKS, SOCIAL_LINKS } from "@/app/lib/constants";
 
 const legalLinks = [
   { label: "Terms & Conditions", href: "#terms" },
@@ -50,7 +37,7 @@ export default function Footer() {
             </a>
 
             <ul className="mt-5 flex flex-col gap-2">
-              {socialLinks.map((s) => (
+              {SOCIAL_LINKS.map((s) => (
                 <li key={s.label}>
                   <a
                     href={s.href}
@@ -74,7 +61,7 @@ export default function Footer() {
             <FooterColumnHeading>Navigation</FooterColumnHeading>
 
             <ul className="mt-4 flex flex-col gap-2">
-              {navLinks.map((l) => (
+              {FOOTER_NAV_LINKS.map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
@@ -104,11 +91,18 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Big wordmark + legal column */}
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-6 items-center md:mt-14">
+        {/* Big wordmark + legal column.
+            Wordmark spans ~60vw on desktop: for this Michroma cut the rendered
+            text-width/font-size ratio is ≈ 6.369, so 60 / 6.369 ≈ 9.4vw. The
+            min(.., 20vh) cap shrinks it on short/ultrawide viewports so it never
+            forces the fixed-height footer to overflow.
+            col-span-9 (not 10) leaves cols 10–12 free for the legal column so it
+            stays on the SAME row instead of being bumped to a second row — that
+            wrap was adding ~124px and overflowing the footer on short screens. */}
+        <div className="[margin-top:clamp(1.5rem,5vh,3.25rem)] grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-6 items-center">
           <h2
-            className="font-light leading-[0.85] tracking-[-0.04em] text-white md:col-span-9 md:col-start-1"
-            style={{ fontSize: "clamp(1.75rem, 18vw, 11.5rem)" }}
+            className="font-light leading-[0.85] tracking-[-0.04em] text-white md:col-span-9 md:col-start-1 md:whitespace-nowrap"
+            style={{ fontSize: "clamp(2.5rem, min(9.4vw, 20vh), 16rem)" }}
           >
           Logixa Lab
           </h2>
@@ -128,7 +122,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <p className="mt-12 max-w-88 text-xs leading-snug text-(--hero-accent) md:mt-12">
+        <p className="[margin-top:clamp(1.5rem,5vh,3.25rem)] max-w-88 text-xs leading-snug text-(--hero-accent)">
           Copyrights @ Logixalab <br/>All Rights Reserved
         </p>
       </div>
