@@ -65,17 +65,6 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${poppins.variable} ${michroma.variable} min-h-full antialiased`}
     >
-      <head>
-        {/* Preload the hero background before any JS runs — prevents the
-            late-load flash on the home page. Must match the exact src used
-            by the Image component in HeroSection. */}
-        <link
-          rel="preload"
-          as="image"
-          href="/images/background.webp"
-          type="image/webp"
-        />
-      </head>
       <body className="min-h-full flex flex-col font-sans antialiased">
         <Header />
         <SmoothScroll>{children}</SmoothScroll>
