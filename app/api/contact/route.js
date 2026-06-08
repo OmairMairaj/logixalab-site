@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-/* Must run on the Node.js runtime (nodemailer uses Node sockets, not Edge) and
-   must never be statically optimized — it sends mail per request. */
+/* Must run on the Node.js runtime and must never be statically optimized —
+   it sends mail per request via Resend's HTTP API. */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -43,23 +43,16 @@ export async function POST(request) {
     return NextResponse.json({ error: "One of the fields is too long." }, { status: 400 });
   }
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, CONTACT_TO } = process.env;
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-    // Don't leak which var is missing to the client.
-    console.error("[contact] SMTP environment variables are not configured.");
+  const { RESEND_API_KEY, CONTACT_TO, CONTACT_FROM } = process.env;
+  if (!RESEND_API_KEY) {
+    console.error("[contact] RESEND_API_KEY is not configured.");
     return NextResponse.json({ error: "Email service is not configured yet." }, { status: 500 });
   }
 
-  const port = Number(SMTP_PORT);
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port,
-    secure: port === 465, // 465 = implicit TLS; 587/25 = STARTTLS
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  });
-
-  const to = CONTACT_TO || SMTP_USER;
-  const from = SMTP_FROM || SMTP_USER;
+  // Where inquiries land (the info@ Google Group). "From" must be an address
+  // on a domain verified in Resend — it is a label only, not a real mailbox.
+  const to = CONTACT_TO || "info@logixalab.com";
+  const fromAddr = CONTACT_FROM || "noreply@logixalab.com";
 
   const lines = [
     `Name:    ${name}`,
@@ -71,9 +64,11 @@ export async function POST(request) {
     message || "—",
   ];
 
+  const resend = new Resend(RESEND_API_KEY);
+
   try {
-    await transporter.sendMail({
-      from: `"LogixaLab Website" <${from}>`,
+    const { error } = await resend.emails.send({
+      from: `LogixaLab Website <${fromAddr}>`,
       to,
       replyTo: email,
       subject: `New inquiry — ${name} (${service})`,
@@ -88,8 +83,16 @@ export async function POST(request) {
           <p><strong>Message:</strong><br>${esc(message).replace(/\n/g, "<br>") || "—"}</p>
         </div>`,
     });
+
+    if (error) {
+      console.error("[contact] Resend returned an error:", error);
+      return NextResponse.json(
+        { error: "Couldn't send your message. Please email us directly at info@logixalab.com." },
+        { status: 502 },
+      );
+    }
   } catch (err) {
-    console.error("[contact] sendMail failed:", err);
+    console.error("[contact] send failed:", err);
     return NextResponse.json(
       { error: "Couldn't send your message. Please email us directly at info@logixalab.com." },
       { status: 502 },
