@@ -141,7 +141,7 @@
               src="/images/wide-blur.webp"
               alt=""
               fill
-              priority
+              loading="lazy"
               className="object-contain object-bottom mt-20"
               sizes="100vw"
             />

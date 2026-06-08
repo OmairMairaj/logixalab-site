@@ -58,7 +58,9 @@
   animation: cap-float 6s ease-in-out infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Touch/mobile + reduced-motion: kill the always-on float so low-end phones
+   don't pay continuous compositor cost for an effect that barely reads small. */
+@media (prefers-reduced-motion: reduce), (hover: none) {
   .cap-float {
     animation: none;
   }
@@ -81,7 +83,9 @@
   animation: globe-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Touch/mobile + reduced-motion: stop the 5 simultaneous infinite marker
+   pulses — they each promote a scaling GPU layer, costly on low-end mobile. */
+@media (prefers-reduced-motion: reduce), (hover: none) {
   .globe-ping {
     animation: none;
   }
@@ -328,12 +332,30 @@ html.lenis body {
    ToolsSection.js); touch devices have no hover, so ToolsSection drives
    --tool-color per chip from a center scan-zone as the marquee scrolls. */
 @layer components {
-  /* Hero "lite" mode (mobile / touch / reduced-motion): HeroSection flags the
-     hero with data-lite and skips the blob rAF; hide the GPU-heavy glass lens +
-     reveal SVG so only the static portrait shows. */
-  [data-lite] .hero-glass,
-  [data-lite] .hero-reveal {
+  /* Hero reveal modes — HeroSection sets data-mode on the hero:
+       full = desktop cursor blob   (SVG mask + backdrop-filter glass lens)
+       auto = mobile transform-spotlight (composite-only see-through reveal)
+       lite = reduced-motion        (static portrait, nothing animates)
+     The spot is off until JS resolves `auto`, so there's no first-paint flash
+     of the unmasked robot; full/lite keep it hidden. With no data-mode (SSR /
+     pre-hydration) the glass + reveal show, matching prior behavior. */
+  .hero-spot {
     display: none;
+  }
+  [data-mode="auto"] .hero-spot {
+    display: block;
+  }
+  [data-mode="auto"] .hero-glass,
+  [data-mode="auto"] .hero-reveal,
+  [data-mode="lite"] .hero-glass,
+  [data-mode="lite"] .hero-reveal {
+    display: none;
+  }
+  /* Promote ONLY the moving window + its robot to compositor layers, and only
+     in auto mode (don't pin layers on desktop or when offscreen-paused). */
+  [data-mode="auto"] .hero-spot,
+  [data-mode="auto"] .hero-spot__robot {
+    will-change: transform;
   }
 
   /* Intro decode promotes only the nodes it actually animates: per-character on

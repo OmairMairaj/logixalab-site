@@ -11,6 +11,19 @@ import { useCallback, useLayoutEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* Mobile "auto" spotlight path — normalized points across the model's
+   face/torso (x,y in [0,1] of the portrait box). Looped slowly; each segment
+   runs SPOT_SEG_DUR seconds (5 segments ≈ 14s round trip). */
+const SPOT_PATH = [
+  { nx: 0.5, ny: 0.3 },
+  { nx: 0.66, ny: 0.45 },
+  { nx: 0.54, ny: 0.62 },
+  { nx: 0.36, ny: 0.54 },
+  { nx: 0.46, ny: 0.38 },
+  { nx: 0.5, ny: 0.3 },
+];
+const SPOT_SEG_DUR = 2.8;
+
 export default function HeroSection() {
   const wrapperRef = useRef(null);
   const heroRef = useRef(null);
@@ -36,6 +49,14 @@ export default function HeroSection() {
   const robotRef = useRef(null); // <image> robot, sized/placed over the portrait
   const nodeRefs = useRef([]); // <circle> elements for the chain
   const nodesRef = useRef([]); // { x, y } positions
+
+  /* Mobile "auto" mode — a composite-only spotlight: a soft-edged circular
+     window (spotRef) glides along a fixed path while the robot inside it
+     (spotRobotRef) counter-translates to stay registered to the portrait.
+     boxRef caches the portrait box + radius so onUpdate never reads layout. */
+  const spotRef = useRef(null);
+  const spotRobotRef = useRef(null);
+  const boxRef = useRef({ ox: 0, oy: 0, w: 1, h: 1, R: 70 });
   const pointerRef = useRef({
     tx: 0,
     ty: 0,
@@ -147,6 +168,46 @@ export default function HeroSection() {
     robot.setAttribute("height", Math.max(1, pr.height).toFixed(1));
   }, []);
 
+  /* Apply the spotlight transforms for a normalized path point (nx,ny) ∈ [0,1]
+     within the portrait box. Composite-only: two translate3d writes, no layout
+     reads. The window centers on (cx,cy); the robot counter-translates so its
+     pixels stay locked to the portrait regardless of where the window is. */
+  const applySpot = useCallback((nx, ny) => {
+    const spot = spotRef.current;
+    const robot = spotRobotRef.current;
+    if (!spot || !robot) return;
+    const { ox, oy, w, h, R } = boxRef.current;
+    const cx = ox + nx * w;
+    const cy = oy + ny * h;
+    spot.style.transform = `translate3d(${(cx - R).toFixed(1)}px, ${(cy - R).toFixed(1)}px, 0)`;
+    robot.style.transform = `translate3d(${(ox - cx + R).toFixed(1)}px, ${(oy - cy + R).toFixed(1)}px, 0)`;
+  }, []);
+
+  /* Size + register the mobile spotlight to the portrait box (mount + resize).
+     Mirrors placeRobot's box math; radius is smaller than the desktop blob and
+     scales gently with viewport width. */
+  const placeSpot = useCallback(() => {
+    const hero = heroRef.current;
+    const portrait = portraitRef.current;
+    const spot = spotRef.current;
+    const robot = spotRobotRef.current;
+    if (!hero || !portrait || !spot || !robot) return;
+    const hr = hero.getBoundingClientRect();
+    const pr = portrait.getBoundingClientRect();
+    const R = Math.max(56, Math.min(window.innerWidth * 0.18, 96));
+    boxRef.current = {
+      ox: pr.left - hr.left,
+      oy: pr.top - hr.top,
+      w: Math.max(1, pr.width),
+      h: Math.max(1, pr.height),
+      R,
+    };
+    spot.style.width = `${(R * 2).toFixed(1)}px`;
+    spot.style.height = `${(R * 2).toFixed(1)}px`;
+    robot.style.width = `${boxRef.current.w.toFixed(1)}px`;
+    robot.style.height = `${boxRef.current.h.toFixed(1)}px`;
+  }, []);
+
   useLayoutEffect(() => {
     reduceMotionRef.current =
       typeof window !== "undefined" &&
@@ -166,12 +227,18 @@ export default function HeroSection() {
        + two SVG turbulence/displacement filters every frame. Running it on phones
        costs heavy GPU for zero interaction, so gate it to capable devices and,
        even there, pause it whenever the hero is scrolled out of view. */
-    const canRunBlob =
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
-      window.innerWidth >= 768 &&
-      !reduceMotionRef.current;
+    /* Resolve the reveal mode:
+         full = desktop cursor blob (fine pointer + wide + motion ok)
+         auto = mobile predefined spotlight (touch / coarse / narrow)
+         lite = reduced-motion → static portrait, nothing animates. */
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const wide = window.innerWidth >= 768;
+    const mode = reduceMotionRef.current ? "lite" : fine && wide ? "full" : "auto";
+    hero.dataset.mode = mode;
 
     let stopObserve = () => {};
+    let spotTl = null;
+    const spotPt = { nx: SPOT_PATH[0].nx, ny: SPOT_PATH[0].ny };
     const startLoop = () => {
       if (!rafRef.current) rafRef.current = requestAnimationFrame(stepBlob);
     };
@@ -182,7 +249,7 @@ export default function HeroSection() {
       }
     };
 
-    if (canRunBlob) {
+    if (mode === "full") {
       /* Seed the blob over the portrait so the lens is in place before the
          pointer ever moves, then run it only while the hero is on screen. */
       const hr = hero.getBoundingClientRect();
@@ -199,12 +266,30 @@ export default function HeroSection() {
       stopObserve = observeInView(hero, (visible) =>
         visible ? startLoop() : stopLoop(),
       );
-    } else {
-      /* Lite path (mobile / touch / reduced-motion): skip the rAF entirely and
-         flag the hero so CSS hides the glass lens + reveal SVG — just the static
-         portrait shows, at a fraction of the cost. */
-      hero.dataset.lite = "1";
+    } else if (mode === "auto") {
+      /* Mobile: register the spotlight to the portrait, then glide it along the
+         predefined path with a slow infinite loop — paused while offscreen. The
+         tween mutates a plain {nx,ny}; onUpdate does the two composite writes. */
+      placeSpot();
+      applySpot(spotPt.nx, spotPt.ny);
+      spotTl = gsap.timeline({
+        repeat: -1,
+        paused: true,
+        defaults: { ease: "sine.inOut" },
+      });
+      for (let i = 1; i < SPOT_PATH.length; i += 1) {
+        spotTl.to(spotPt, {
+          nx: SPOT_PATH[i].nx,
+          ny: SPOT_PATH[i].ny,
+          duration: SPOT_SEG_DUR,
+          onUpdate: () => applySpot(spotPt.nx, spotPt.ny),
+        });
+      }
+      stopObserve = observeInView(hero, (visible) =>
+        visible ? spotTl.play() : spotTl.pause(),
+      );
     }
+    /* mode === "lite": nothing animates; the static portrait shows. */
 
     const mm = gsap.matchMedia();
 
@@ -302,7 +387,11 @@ export default function HeroSection() {
 
     const refresh = () => {
       ScrollTrigger.refresh();
-      if (canRunBlob) placeRobot();
+      if (mode === "full") placeRobot();
+      else if (mode === "auto") {
+        placeSpot();
+        applySpot(spotPt.nx, spotPt.ny);
+      }
     };
     requestAnimationFrame(refresh);
     window.addEventListener("load", refresh);
@@ -313,20 +402,21 @@ export default function HeroSection() {
       window.removeEventListener("resize", refresh);
       stopObserve();
       stopLoop();
-      delete hero.dataset.lite;
+      spotTl?.kill();
+      delete hero.dataset.mode;
       mm.revert();
     };
-  }, [placeRobot, stepBlob]);
+  }, [placeRobot, placeSpot, applySpot, stepBlob]);
 
   return (
     <section
       ref={wrapperRef}
-      className="relative z-20 h-screen w-full md:h-[300vh]"
+      className="relative z-20 h-[100svh] w-full md:h-[300vh]"
     >
       <div
         ref={heroRef}
         onMouseMove={handleHeroMouseMove}
-        className="sticky top-0 h-screen w-full overflow-hidden bg-(--hero-canvas)"
+        className="sticky top-0 h-[100svh] w-full overflow-hidden bg-(--hero-canvas) md:h-screen"
       >
         {/* Background — green burst + side glows (scoped to the hero) */}
         <div ref={bgRef} className="pointer-events-none absolute inset-0 z-0" aria-hidden>
@@ -366,10 +456,10 @@ export default function HeroSection() {
         {/* Heading — left */}
         <div
           ref={headingRef}
-          className="pointer-events-none absolute left-(--gutter) top-[12%] z-20 w-[min(82vw,400px)] will-change-[opacity,transform] md:top-[18%]"
+          className="pointer-events-none absolute left-(--gutter) right-(--gutter) top-[11%] z-20 w-auto will-change-[opacity,transform] md:right-auto md:top-[18%] md:w-[min(82vw,400px)]"
         >
           <h2
-            className="font-heading text-[clamp(2rem,6.2vw,5.5rem)] font-normal leading-[1.05] tracking-[-0.02em] text-white"
+            className="font-heading text-[clamp(1.25rem,6.7vw,2.25rem)] font-normal leading-[1.1] tracking-[-0.02em] text-white md:text-[clamp(2rem,6.2vw,5.5rem)] md:leading-[1.05]"
             style={{ textShadow: "0 2px 40px rgba(0,0,0,0.5)" }}
           >
             Trusted Engineering.
@@ -378,19 +468,47 @@ export default function HeroSection() {
           </h2>
         </div>
 
-        {/* Center portrait — female (the robot is revealed at hero level below) */}
+        {/* Center portrait — female (the robot is revealed at hero level below).
+            Mobile: ~58vh tall, centered just below the heading (the box is wider
+            than the phone and clipped by the hero's overflow-hidden). Desktop
+            (md:): original box — full hero height, width clamp, anchored 53%. */}
         <div
           ref={portraitRef}
-          className="pointer-events-none absolute inset-x-0 bottom-0 top-[26%] z-10 mx-auto will-change-[opacity,transform] md:left-[53%] md:right-auto md:inset-y-0 md:-translate-x-1/2"
-          style={{ width: "clamp(260px, 80vw, 800px)" }}
+          className="pointer-events-none absolute inset-x-0 top-[20%] bottom-0 z-10 will-change-[opacity,transform] md:inset-x-auto md:left-[53%] md:top-0 md:w-[clamp(260px,80vw,800px)] md:-translate-x-1/2"
         >
           <Image
             src="/images/hero-female.webp"
             alt="LogixaLab — Trusted Engineering"
             fill
-            className="object-contain object-bottom"
+            className="object-cover object-[58%_top] md:object-contain md:object-bottom"
             priority
-            sizes="(max-width: 640px) 80vw, (max-width: 1024px) 60vw, 800px"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 800px"
+          />
+        </div>
+
+        {/* Mobile-only spotlight (data-mode="auto"): a soft-edged circular window
+            that glides along a fixed path, with the robot inside counter-translated
+            so its pixels stay locked to the portrait — a composite-only see-through
+            reveal (no backdrop-filter, no SVG filters). Hidden on desktop/lite. */}
+        <div
+          ref={spotRef}
+          className="hero-spot pointer-events-none absolute left-0 top-0 z-[12] overflow-hidden rounded-full"
+          aria-hidden
+          style={{
+            WebkitMaskImage:
+              "radial-gradient(circle, #000 30%, rgba(0,0,0,0.5) 62%, transparent 100%)",
+            maskImage:
+              "radial-gradient(circle, #000 30%, rgba(0,0,0,0.5) 62%, transparent 100%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* Must mirror the mobile female's fit/position (object-cover object-[58%_top])
+              so the revealed robot pixels register exactly with the portrait. */}
+          <img
+            ref={spotRobotRef}
+            src="/images/hero-robot.webp"
+            alt=""
+            className="hero-spot__robot absolute left-0 top-0 max-w-none object-cover object-[58%_top]"
           />
         </div>
 
@@ -541,20 +659,23 @@ export default function HeroSection() {
         {/* Right copy + CTA link */}
         <aside
           ref={copyRef}
-          className="absolute bottom-[7%] left-(--gutter) right-(--gutter) z-20 text-left will-change-[opacity,transform] md:bottom-auto md:left-auto md:top-[50%] md:w-[min(30vw,400px)]"
+          className="absolute bottom-[6%] left-(--gutter) right-(--gutter) z-20 text-left will-change-[opacity,transform] md:bottom-auto md:left-auto md:top-[50%] md:w-[min(30vw,400px)]"
         >
-          <p className="font-sans text-[clamp(0.875rem,1.2vw,1rem)] font-normal leading-[1.45] tracking-[0] text-white/90">
-            LogixaLab builds enterprise platforms, AI systems, cloud
-            infrastructure, and digital experiences designed to perform under
-            real-world pressure.
-          </p>
-          <p className="mt-[1.35em] font-sans text-[clamp(0.875rem,1.2vw,1rem)] font-normal leading-[1.45] tracking-[0] text-white/90">
-            From AI-powered automation to large-scale platform engineering, every
-            solution is built in-house by one integrated team.
-          </p>
+          {/* Mobile: two columns side-by-side; desktop: stacked single column. */}
+          <div className="grid grid-cols-2 gap-x-5 md:block">
+            <p className="font-sans text-[0.78rem] font-normal leading-[1.5] tracking-[0] text-white/90 md:text-[clamp(0.875rem,1.2vw,1rem)] md:leading-[1.45]">
+              LogixaLab builds enterprise platforms, AI systems, cloud
+              infrastructure, and digital experiences designed to perform under
+              real-world pressure.
+            </p>
+            <p className="font-sans text-[0.78rem] font-normal leading-[1.5] tracking-[0] text-white/90 md:mt-[1.35em] md:text-[clamp(0.875rem,1.2vw,1rem)] md:leading-[1.45]">
+              From AI-powered automation to large-scale platform engineering, every
+              solution is built in-house by one integrated team.
+            </p>
+          </div>
           <Link
             href="/contact"
-            className="mt-[1.6em] inline-flex w-fit items-center gap-2.5 text-[clamp(0.875rem,1.2vw,1rem)] font-semibold text-white transition-opacity hover:opacity-80"
+            className="mt-5 inline-flex w-fit items-center gap-2.5 text-[0.82rem] font-semibold text-white transition-opacity hover:opacity-80 md:mt-[1.6em] md:text-[clamp(0.875rem,1.2vw,1rem)]"
           >
             <Image
               src="/images/logo-white.png"
