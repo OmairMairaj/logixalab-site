@@ -77,15 +77,41 @@ const initialValues = {
  */
 export default function ContactFormCard() {
   const [values, setValues] = useState(initialValues);
+  // status: "idle" | "submitting" | "success" | "error"
+  const [status, setStatus] = useState("idle");
+  const [feedback, setFeedback] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setValues((prev) => ({ ...prev, [name]: value }));
+    if (status === "error") {
+      setStatus("idle");
+      setFeedback("");
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    /* Wire to backend later. */
+    if (status === "submitting") return;
+    setStatus("submitting");
+    setFeedback("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+
+      setStatus("success");
+      setFeedback("Thanks! Your message has been sent — we'll be in touch shortly.");
+      setValues(initialValues);
+    } catch (err) {
+      setStatus("error");
+      setFeedback(err.message || "Couldn't send your message. Please try again.");
+    }
   };
 
   return (
@@ -151,8 +177,13 @@ export default function ContactFormCard() {
           />
         </label>
 
-        <div data-cf className="flex justify-center pt-4 will-change-[opacity,transform]">
-          <button type="submit" className="header-cta header-cta--lime" aria-label="Submit">
+        <div data-cf className="flex flex-col items-center gap-3 pt-4 will-change-[opacity,transform]">
+          <button
+            type="submit"
+            className="header-cta header-cta--lime disabled:cursor-not-allowed disabled:opacity-60"
+            aria-label="Submit"
+            disabled={status === "submitting"}
+          >
             <Image
               src="/images/logo-black.png"
               alt=""
@@ -161,8 +192,20 @@ export default function ContactFormCard() {
               className="h-[1.2em] w-auto object-contain"
               aria-hidden
             />
-            <span>Submit</span>
+            <span>{status === "submitting" ? "Sending…" : "Submit"}</span>
           </button>
+
+          {feedback ? (
+            <p
+              role="status"
+              aria-live="polite"
+              className={`text-center text-[12px] leading-relaxed ${
+                status === "error" ? "text-red-300" : "text-(--hero-accent)"
+              }`}
+            >
+              {feedback}
+            </p>
+          ) : null}
         </div>
       </form>
     </>
