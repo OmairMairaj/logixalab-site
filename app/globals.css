@@ -20,6 +20,11 @@
   --header-h:  clamp(4rem, 5vw, 5rem);          /* header bar height       */
   --header-offset: calc(0.5rem + var(--header-h)); /* fixed header top-2 + bar */
   --viewport-below-header: calc(100dvh - var(--header-offset));
+  /* Shared vertical anchor for the page hero text block (eyebrow → heading →
+     body). Top-anchored at this offset on every page (/services, /work,
+     /contact, /team) so the hero copy sits at the SAME vertical spot — roughly
+     centered — and never jumps when navigating between pages. Single knob. */
+  --hero-anchor-top: calc(var(--header-offset) + 15svh);
 
   /* Fluid type scale */
   --text-2xs:  clamp(0.65rem,  0.75vw, 0.75rem);
@@ -347,50 +352,6 @@ html.lenis body {
    ToolsSection.js); touch devices have no hover, so ToolsSection drives
    --tool-color per chip from a center scan-zone as the marquee scrolls. */
 
-/* Mobile hero liquid-blob — the spotlight mask is built from a core lobe + three
-   satellite lobes (see .hero-spot). Registering these lobe-center vars as real
-   <percentage> properties is what lets them INTERPOLATE; bare custom props don't
-   animate. They drive only the mask, so the wobble costs a small mask repaint —
-   no SVG filters / backdrop-filter (the heavy desktop path). */
-@property --sy1 { syntax: "<percentage>"; inherits: false; initial-value: 50%; }
-@property --sx2 { syntax: "<percentage>"; inherits: false; initial-value: 30%; }
-@property --sy2 { syntax: "<percentage>"; inherits: false; initial-value: 33%; }
-@property --sx3 { syntax: "<percentage>"; inherits: false; initial-value: 70%; }
-@property --sy3 { syntax: "<percentage>"; inherits: false; initial-value: 44%; }
-@property --sx4 { syntax: "<percentage>"; inherits: false; initial-value: 52%; }
-@property --sy4 { syntax: "<percentage>"; inherits: false; initial-value: 71%; }
-
-/* Drift the lobe centers so the metaball silhouette squishes and stretches like
-   a drop of liquid. A 4-step cycle with generous, out-of-phase travel keeps the
-   shape visibly non-circular; all values stay inside the box so the soft edges
-   never hit a hard clip. */
-@keyframes heroSpotMorph {
-  0%, 100% {
-    --sy1: 50%;
-    --sx2: 30%; --sy2: 33%;
-    --sx3: 70%; --sy3: 44%;
-    --sx4: 52%; --sy4: 71%;
-  }
-  25% {
-    --sy1: 45%;
-    --sx2: 38%; --sy2: 41%;
-    --sx3: 63%; --sy3: 36%;
-    --sx4: 60%; --sy4: 66%;
-  }
-  50% {
-    --sy1: 54%;
-    --sx2: 27%; --sy2: 38%;
-    --sx3: 73%; --sy3: 51%;
-    --sx4: 45%; --sy4: 73%;
-  }
-  75% {
-    --sy1: 48%;
-    --sx2: 34%; --sy2: 28%;
-    --sx3: 67%; --sy3: 47%;
-    --sx4: 56%; --sy4: 69%;
-  }
-}
-
 @layer components {
   /* Hero reveal modes — HeroSection sets data-mode on the hero:
        full = desktop cursor blob   (SVG mask + backdrop-filter glass lens)
@@ -401,40 +362,18 @@ html.lenis body {
      pre-hydration) the glass + reveal show, matching prior behavior. */
   .hero-spot {
     display: none;
-    /* Liquid-blob window — a metaball silhouette: one core lobe plus three
-       satellite lobes. Default mask compositing (add) fuses their soft radial
-       alphas into a single gooey shape with feathered edges, so the revealed
-       robot reads as an organic drop rather than a hard circle. Ellipse %-sized
-       so every feather lands inside the box (no hard clip). Cheap on low-end:
-       just a gradient mask — none of the desktop SVG-filter / backdrop work. */
-    --sy1: 50%;
-    --sx2: 30%; --sy2: 33%;
-    --sx3: 70%; --sy3: 44%;
-    --sx4: 52%; --sy4: 71%;
-    -webkit-mask-image:
-      radial-gradient(ellipse 30% 30% at 50% var(--sy1), #000 0 55%, transparent 100%),
-      radial-gradient(ellipse 25% 25% at var(--sx2) var(--sy2), #000 0 52%, transparent 100%),
-      radial-gradient(ellipse 26% 26% at var(--sx3) var(--sy3), #000 0 52%, transparent 100%),
-      radial-gradient(ellipse 24% 24% at var(--sx4) var(--sy4), #000 0 50%, transparent 100%);
-    mask-image:
-      radial-gradient(ellipse 30% 30% at 50% var(--sy1), #000 0 55%, transparent 100%),
-      radial-gradient(ellipse 25% 25% at var(--sx2) var(--sy2), #000 0 52%, transparent 100%),
-      radial-gradient(ellipse 26% 26% at var(--sx3) var(--sy3), #000 0 52%, transparent 100%),
-      radial-gradient(ellipse 24% 24% at var(--sx4) var(--sy4), #000 0 50%, transparent 100%);
+    /* Circular reveal window: a soft-edged circle inscribed in the square spot
+       box. `closest-side` lands the gradient's 100% on the nearest edge, so the
+       circle fits the box and the feather never hits a hard clip. Cheap on
+       low-end: a single static gradient mask — no SVG filters / backdrop work,
+       and nothing animates. */
+    -webkit-mask-image: radial-gradient(circle closest-side, #000 0 82%, transparent 100%);
+    mask-image: radial-gradient(circle closest-side, #000 0 82%, transparent 100%);
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
   }
   [data-mode="auto"] .hero-spot {
     display: block;
-    /* The "liquid" feel: slowly drift the lobe centers so the silhouette
-       breathes. Only the registered mask vars animate — the mask repaints on a
-       ~112-192px box, so it stays smooth on low-end phones. */
-    animation: heroSpotMorph 8s ease-in-out infinite;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    [data-mode="auto"] .hero-spot {
-      animation: none;
-    }
   }
   [data-mode="auto"] .hero-glass,
   [data-mode="auto"] .hero-reveal,

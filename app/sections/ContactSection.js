@@ -141,7 +141,7 @@ export default function ContactSection({ endZone = false }) {
         src="/images/default-contact-section-bg.webp"
         alt=""
         fill
-        className="object-cover object-right grayscale contrast-[0.92] brightness-[0.3]"
+        className="object-cover object-center md:object-right grayscale contrast-[0.92] brightness-[0.3] sm:brightness-[0.3]"
         sizes="100vw"
       />
       <div
@@ -178,10 +178,20 @@ export default function ContactSection({ endZone = false }) {
         className="relative z-10 scroll-mt-20 bg-black md:-mt-[150vh] md:h-[380vh]"
       >
         <div className="relative overflow-hidden md:sticky md:top-0 md:flex md:h-screen md:items-center md:justify-center">
-          {bgLayer}
+          {/* On mobile this `relative` box bounds the bg image to the card
+              region only (the footer below is a sibling and is opaque, so it
+              never needed the image behind it). That lets the landscape image
+              fit its HEIGHT to the visible contact area and center horizontally
+              — instead of being scaled to cover the full card+footer stack,
+              which pushed the subject down behind the footer. `md:contents`
+              dissolves this box on desktop, so the bg returns to covering the
+              full pinned screen and the footer slides over it exactly as before. */}
+          <div className="relative md:contents">
+            {bgLayer}
 
-          <div className="relative z-[1] mx-auto w-full max-w-[clamp(20rem,34vw,30rem)] px-4 py-16 sm:px-6 md:p-0">
-            {cardBox}
+            <div className="relative z-[1] mx-auto w-full max-w-[clamp(20rem,34vw,30rem)] px-4 py-16 sm:px-6 md:p-0">
+              {cardBox}
+            </div>
           </div>
 
           {/* Footer — slides up over the pinned card on desktop; normal block on mobile */}

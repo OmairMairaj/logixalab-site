@@ -105,9 +105,12 @@
              screen). Now it decodes as the paragraph rises from the lower
              viewport up toward center. */
           scrollTrigger: {
+            /* Hold the copy dim until the paragraph rises to ~60% of the
+               viewport, then decode it over the next ~30vh — a deliberate beat
+               before the reveal instead of firing the instant it peeks in. */
             trigger: paragraph,
-            start: "top 90%",
-            end: "top 45%",
+            start: "top 60%",
+            end: "top 30%",
             scrub: 0.4,
             invalidateOnRefresh: true,
           },
@@ -149,6 +152,37 @@
               loading="lazy"
               className="object-contain object-bottom mt-20"
               sizes="100vw"
+            />
+          </div>
+
+          {/* Mobile-only binary accents — faint texture pinned to the top-right
+              and bottom-left corners (flush to the screen edges; `right-0`/`left-0`
+              ignore the section gutter). Behind the copy (z-0) and clipped by the
+              sticky panel's overflow-hidden. Desktop keeps the clean glow+decode. */}
+          <div
+            className="pointer-events-none absolute right-0 top-0 z-0 h-[24vh] w-[56vw] opacity-50 md:hidden"
+            aria-hidden
+          >
+            <Image
+              src="/images/binary.webp"
+              alt=""
+              fill
+              loading="lazy"
+              className="object-contain object-right-top"
+              sizes="56vw"
+            />
+          </div>
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 z-0 h-[24vh] w-[56vw] opacity-50 md:hidden"
+            aria-hidden
+          >
+            <Image
+              src="/images/binary.webp"
+              alt=""
+              fill
+              loading="lazy"
+              className="object-contain object-left-bottom"
+              sizes="56vw"
             />
           </div>
 

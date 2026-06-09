@@ -29,8 +29,13 @@ function GradientStrokeText({ children, className = "", strokeWidth = 1, ...rest
             ))}
           </linearGradient>
         </defs>
+        {/* iOS Safari renders SVG <text fill="none"> with a stroke as a SOLID
+            glyph — it falls back to filling. Forcing the fill transparent via
+            CSS (which iOS honors over the presentation attribute) keeps the
+            interior hollow so only the gradient stroke shows. paintOrder=stroke
+            guards against the stroke being overdrawn by any fill artifact. */}
         <text
-          fill="none"
+          fill="transparent"
           stroke={`url(#fw-stroke-${gradId})`}
           strokeWidth={strokeWidth}
           x="0"
@@ -39,6 +44,8 @@ function GradientStrokeText({ children, className = "", strokeWidth = 1, ...rest
           fontFamily="var(--font-poppins), ui-sans-serif, system-ui, sans-serif"
           fontWeight="500"
           letterSpacing="0"
+          paintOrder="stroke"
+          style={{ fill: "transparent" }}
         >
           {children}
         </text>

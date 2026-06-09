@@ -127,10 +127,17 @@ export default function TeamScrollExperience() {
         const headingLines = heroBlock.querySelectorAll("[data-team-line]");
         const heroFurniture = [eyebrow, ...headingLines, para, scrollCue];
 
+        /* Opening offset = +5vh on top of the heroBlock's CSS `top`
+           (header-offset + 10vh) → the big headline's eyebrow opens at
+           header-offset + 15vh, i.e. the SAME shared anchor (--hero-anchor-top:
+           header-offset + 15svh) as the /services /work /contact heroes, so the
+           team's first frame lines up with them. It then docks UP to y:0 (the CSS
+           `top`, near the header) as it shrinks. Keep in sync with
+           --hero-anchor-top if that token is retuned. */
         gsap.set(heroBlock, {
           transformOrigin: "left top",
           scale: 1,
-          y: () => window.innerHeight * 0.15,
+          y: () => window.innerHeight * 0.05,
           force3D: true,
         });
         gsap.set(railContainer, { autoAlpha: 0, pointerEvents: "none" });
@@ -426,7 +433,7 @@ export default function TeamScrollExperience() {
       </div>
 
       {/* ──────────── Static fallback (mobile + reduced-motion) ──────────── */}
-      <div className="relative block overflow-hidden px-(--gutter) pb-24 pt-[calc(var(--header-offset)+4rem)] motion-safe:md:hidden">
+      <div className="relative block overflow-hidden px-(--gutter) pb-24 pt-(--hero-anchor-top) motion-safe:md:hidden">
         <div className="relative z-10">
           <p className="mb-5 flex items-center gap-2 font-sans text-[0.7rem] font-medium uppercase tracking-[0.34em] text-white/45">
             <span
@@ -435,19 +442,23 @@ export default function TeamScrollExperience() {
             />
             Our Team
           </p>
-          <h2 className="font-heading text-[clamp(2rem,9vw,3rem)] font-normal leading-[1.0] tracking-[-0.02em]">
+          {/* Same size/leading as the /services /work /contact hero h1 so the
+              heading — and the body below it — line up vertically across pages. */}
+          <h2 className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] font-normal leading-[0.98] tracking-[-0.03em]">
             <span className="block text-hero-gradient">The Minds</span>
             <span className="block text-white/92">Behind Logixa Lab</span>
           </h2>
           <p
-            className="mt-5 max-w-[42ch] text-sm leading-relaxed text-white/70"
+            className="mt-8 max-w-[52ch] text-[clamp(0.9rem,1.1vw,1.05rem)] leading-relaxed text-white/70"
             dangerouslySetInnerHTML={{
               __html: TEAM_PARA.replace("—", "&mdash;"),
             }}
           />
 
-          {/* Native horizontal swipe rail. */}
-          <div className="mt-10 -mx-(--gutter) flex snap-x snap-mandatory gap-5 overflow-x-auto px-(--gutter) pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Native horizontal swipe rail. `scroll-px-(--gutter)` keeps the
+              snap target inset by the gutter — without it, snap-mandatory scrolls
+              the padding-left away and the first card lands flush to the edge. */}
+          <div className="mt-10 -mx-(--gutter) flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-(--gutter) px-(--gutter) pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {TEAM.map((member) => (
               <div key={member.name} className="snap-start">
                 <TeamCard

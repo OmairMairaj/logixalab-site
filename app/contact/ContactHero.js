@@ -18,7 +18,7 @@ export default function ContactHero() {
   return (
     <section
       ref={rootRef}
-      className="relative z-10 flex min-h-[calc(90svh-var(--header-offset))] flex-col justify-end overflow-hidden px-(--gutter) pb-[clamp(4rem,12vh,8rem)] pt-(--header-offset) text-white"
+      className="relative z-10 flex min-h-[calc(90svh-var(--header-offset))] flex-col justify-start overflow-hidden px-(--gutter) pb-[clamp(3rem,8vh,6rem)] pt-(--hero-anchor-top) text-white"
       aria-labelledby="contact-hero-heading"
     >
       <div className="relative z-10 w-full">
@@ -39,7 +39,7 @@ export default function ContactHero() {
           </span>
         </h1>
 
-        <div className="mt-8 flex flex-col gap-10 md:mt-12 md:flex-row md:items-end md:justify-between md:gap-12">
+        <div className="mt-8 flex flex-col gap-10 md:mt-12 md:flex-row md:items-start md:justify-between md:gap-12">
           <p
             data-hero
             className="max-w-[52ch] text-[clamp(0.9rem,1.1vw,1.05rem)] leading-relaxed text-white/70 will-change-[opacity,transform,filter]"

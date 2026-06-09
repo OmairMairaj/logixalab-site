@@ -23,8 +23,9 @@ export default function Footer() {
   return (
     <footer className="relative z-10 h-full overflow-hidden rounded-t-3xl border-t border-white/10 bg-[#0b0b0b] text-white shadow-[0_-24px_60px_rgba(0,0,0,0.55)] md:flex md:flex-col md:justify-center">
       <div className="mx-auto w-full px-(--gutter) pt-16 pb-8 md:pt-4 md:pb-4">
-        {/* Top: 3 columns */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-6">
+        {/* Top: 3 columns. On mobile, Contact + Navigation sit side-by-side in
+            row 1 (grid-cols-2) and Lab's Note spans the full width below. */}
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-12 md:gap-6">
           {/* Contact */}
           <div className="md:col-span-3 md:col-start-1">
             <FooterColumnHeading>Contact</FooterColumnHeading>
@@ -79,7 +80,7 @@ export default function Footer() {
           </div>
 
           {/* Lab's Note */}
-          <div className="md:col-span-3 md:col-start-10">
+          <div className="col-span-2 md:col-span-3 md:col-start-10">
             <FooterColumnHeading>Lab&apos;s Note</FooterColumnHeading>
 
             <p className="mt-4 text-sm leading-relaxed text-white/75">

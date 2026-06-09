@@ -19,7 +19,7 @@ export default function WorkHero() {
   return (
     <section
       ref={rootRef}
-      className="relative z-10 flex min-h-[calc(90svh-var(--header-offset))] flex-col justify-end overflow-hidden px-(--gutter) pb-[clamp(4rem,12vh,8rem)] pt-(--header-offset) text-white"
+      className="relative z-10 flex min-h-[calc(90svh-var(--header-offset))] flex-col justify-start overflow-hidden px-(--gutter) pb-[clamp(3rem,8vh,6rem)] pt-(--hero-anchor-top) text-white"
       aria-labelledby="work-hero-heading"
     >
       <div className="relative z-10 w-full">

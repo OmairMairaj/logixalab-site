@@ -244,16 +244,21 @@ export default function CoreCapabilitiesSection() {
         </div>
 
         {/* Floating per-capability preview — absolute glass card, cross-fades with the active row.
-            Outer wrapper owns positioning + the entrance parallax transform; inner keeps the
-            centering + cap-float so they don't collide. */}
+            Anchored to the BOTTOM-LEFT of its column (gutter-aligned) so it always sits BELOW the
+            heading+button instead of centering into them. Width is capped by viewport HEIGHT
+            (`54vh`) as well as width, so on short/scaled desktops (e.g. 1920×1080 @125% ≈ 1536×864)
+            it shrinks to fit the compressed panel rather than swallowing the button and bleeding
+            into the rows. On tall screens (≥~1080px) the 560px cap still wins, so the large-screen
+            composition is unchanged. Outer wrapper owns positioning + the entrance parallax
+            transform; inner owns the idle cap-float. */}
         <div
           ref={cardParallaxRef}
-          className="pointer-events-none absolute left-(--gutter) left-1/9 top-[65%] z-10 hidden w-[min(46vw,560px)] md:block"
+          className="pointer-events-none absolute bottom-[clamp(1.5rem,5vh,3rem)] left-(--gutter) z-10 hidden w-[min(46vw,54vh,560px)] md:block"
           aria-hidden
         >
         <div
           ref={imageWrapRef}
-          className="aspect-[4/3] -translate-y-1/2 cap-float"
+          className="aspect-[4/3] cap-float"
         >
           <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] shadow-[0_20px_60px_rgba(0,0,0,0.45),0_0_50px_rgba(204,255,0,0.15)] backdrop-blur-xl">
             <div className="relative h-full w-full overflow-hidden rounded-xl">

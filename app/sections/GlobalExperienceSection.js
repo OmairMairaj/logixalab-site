@@ -24,12 +24,13 @@ const LOCATIONS = [
   { name: "Australia", x: 84.8, y: 46.9 },
 ];
 
-function MapMarker({ location, markerRef, peek = false }) {
+function MapMarker({ location, markerRef, peek = false, isActive = false, onTap }) {
   return (
     <button
       ref={markerRef}
       type="button"
       aria-label={location.name}
+      onClick={onTap}
       className="group absolute z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-(--hero-accent) focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       style={{ left: `${location.x}%`, top: `${location.y}%` }}
     >
@@ -41,7 +42,7 @@ function MapMarker({ location, markerRef, peek = false }) {
       {/* White outer ring + center dot */}
       <span
         className={`relative flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-white/10 shadow-[0_0_12px_rgba(255,255,255,0.35)] transition-transform duration-300 group-hover:scale-110 group-focus-visible:scale-110 ${
-          peek ? "scale-110" : ""
+          peek || isActive ? "scale-110" : ""
         }`}
         aria-hidden
       >
@@ -51,7 +52,7 @@ function MapMarker({ location, markerRef, peek = false }) {
       <span
         role="tooltip"
         className={`pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#121212] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:opacity-100 group-hover:-translate-y-0.5 group-focus-visible:opacity-100 group-focus-visible:-translate-y-0.5 ${
-          peek ? "opacity-100 -translate-y-0.5" : "opacity-0"
+          peek || isActive ? "opacity-100 -translate-y-0.5" : "opacity-0"
         }`}
       >
         {location.name}
@@ -76,6 +77,11 @@ export default function GlobalExperienceSection() {
   const [peekTips, setPeekTips] = useState(false);
   const peekTimerRef = useRef(0);
   const peekedRef = useRef(false);
+
+  /* Touch has no hover, so tapping a marker pins its tooltip open (index | null).
+     Tapping the same marker again, another marker, or the map clears/switches it.
+     Kept out of the GSAP effect's deps so taps never re-init ScrollTrigger. */
+  const [activeMarker, setActiveMarker] = useState(null);
 
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current;
@@ -301,6 +307,7 @@ export default function GlobalExperienceSection() {
         {/* World map + markers — full viewport width, full image visible (1244×698) */}
         <div
           ref={mapRef}
+          onClick={() => setActiveMarker(null)}
           className="relative z-10 flex min-h-0 w-screen mt-10 max-w-[100vw] flex-col justify-end will-change-[opacity,transform] md:mt-24 md:top-24 md:flex-1"
         >
           <div
@@ -331,6 +338,13 @@ export default function GlobalExperienceSection() {
                 key={loc.name}
                 location={loc}
                 peek={peekTips}
+                isActive={activeMarker === i}
+                onTap={(e) => {
+                  /* Stop the map's outside-tap handler from immediately clearing
+                     this, and toggle: re-tapping the active marker closes it. */
+                  e.stopPropagation();
+                  setActiveMarker((prev) => (prev === i ? null : i));
+                }}
                 markerRef={(el) => {
                   markerRefs.current[i] = el;
                 }}
