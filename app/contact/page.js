@@ -19,7 +19,7 @@ export default function ContactPage() {
         {/* Hero → form transition + footer rise: the form card reveals as the
             stage pins, then the footer slides up over it (homepage end-zone
             pattern, standalone). FooterReveal renders the footer itself. */}
-        <FooterReveal stageClassName="max-w-[clamp(20rem,34vw,30rem)]">
+        <FooterReveal stageClassName="max-w-[clamp(20rem,82vw,56rem)]">
           <div className="relative w-full">
             <div
               data-fr-glass

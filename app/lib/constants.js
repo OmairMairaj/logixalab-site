@@ -12,7 +12,7 @@ export const NAV_LINKS = [
 ];
 
 /** Footer navigation = the main nav plus a Blog entry. */
-export const FOOTER_NAV_LINKS = [...NAV_LINKS, { label: "Blog", href: "/#blog" }];
+export const FOOTER_NAV_LINKS = [...NAV_LINKS,];
 
 export const SOCIAL_LINKS = [
   { label: "Facebook", href: "https://facebook.com" },

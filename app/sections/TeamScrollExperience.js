@@ -43,7 +43,18 @@ function TeamCard({ member, style, fillHeight = false }) {
       <h3 className="font-heading mt-4 text-[clamp(1rem,1.4vw,1.25rem)] font-normal leading-tight text-(--hero-accent)">
         {member.name}
       </h3>
-      <p className="mt-2 max-w-[90%] text-[12.5px] leading-relaxed text-white/55">
+      {/* Desktop rail only: reserve a fixed 3-line height (and clamp to it) so
+          every card's text block is the same size. There the image area is
+          flex-1, so equal text blocks → equal image heights → the role pills,
+          names and descriptions all align across cards (top AND bottom), instead
+          of the flex-1 image drifting per description length. The mobile static
+          fallback uses a fixed-aspect image (already aligned) and scrolls
+          horizontally, so it keeps full, untruncated copy — no clamp/min-h. */}
+      <p
+        className={`mt-2 max-w-[90%] text-[12.5px] leading-relaxed text-white/55${
+          fillHeight ? " line-clamp-3 min-h-[4.875em]" : ""
+        }`}
+      >
         {member.description}
       </p>
     </article>

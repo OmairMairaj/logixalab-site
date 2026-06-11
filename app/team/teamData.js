@@ -26,7 +26,7 @@ export const TEAM = [
       "Omair ships product-grade AI features with a craft-first engineering mindset.",
   },
   {
-    name: "Mujtaba",
+    name: "Mujtaba Chandio",
     role: "AI Specialist",
     image: "/team/mujtaba-01.png",
     description:

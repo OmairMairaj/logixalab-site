@@ -189,7 +189,7 @@ export default function ContactSection({ endZone = false }) {
           <div className="relative md:contents">
             {bgLayer}
 
-            <div className="relative z-[1] mx-auto w-full max-w-[clamp(20rem,34vw,30rem)] px-4 py-16 sm:px-6 md:p-0">
+            <div className="relative z-[1] mx-auto w-full max-w-[clamp(20rem,82vw,56rem)] px-4 py-16 sm:px-6 md:p-0">
               {cardBox}
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function ContactSection({ endZone = false }) {
       className="relative z-10 scroll-mt-20 overflow-x-hidden px-4 py-12 sm:px-6 md:py-16"
     >
       {bgLayer}
-      <div className="relative z-[1] mx-auto w-full max-w-[clamp(20rem,34vw,30rem)]">
+      <div className="relative z-[1] mx-auto w-full max-w-[clamp(20rem,82vw,56rem)]">
         {cardBox}
       </div>
     </section>

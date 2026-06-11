@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -25,6 +25,20 @@ function CtaLogo() {
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
+
+  /* Sliding pill that follows the hovered/focused nav item. We measure the
+     target link's position relative to its container and animate the pill's
+     left/width to it; opacity 0 hides it when the pointer leaves the nav. */
+  const navListRef = useRef(null);
+  const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const movePillTo = (el) => {
+    const container = navListRef.current;
+    if (!container || !el) return;
+    setPill({ left: el.offsetLeft, width: el.offsetWidth, opacity: 1 });
+  };
+
+  const hidePill = () => setPill((prev) => ({ ...prev, opacity: 0 }));
 
   /* While the mobile menu is open: lock background scroll and close on Escape. */
   useEffect(() => {
@@ -64,7 +78,9 @@ export default function Header() {
           aria-label="Main navigation"
         >
           <div
-            className="flex items-center gap-0.5 rounded-full px-2 py-1.5"
+            ref={navListRef}
+            onMouseLeave={hidePill}
+            className="relative flex items-center gap-0.5 rounded-full px-2 py-1.5"
             style={{
               background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(217,217,217,0.20) 60%, rgba(180,180,180,0.14) 100%)",
               backdropFilter: "blur(20px) saturate(160%)",
@@ -73,11 +89,26 @@ export default function Header() {
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.1)",
             }}
           >
+            {/* Sliding pill — sits behind the links and follows the hovered one */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-1.5 bottom-1.5 rounded-full transition-[left,width,opacity] duration-300 ease-out"
+              style={{
+                left: pill.left,
+                width: pill.width,
+                opacity: pill.opacity,
+                background: "rgba(0,0,0,0.45)",
+                border: "1px solid rgba(204,255,0,0.25)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
+              }}
+            />
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-full px-[clamp(1rem,2.5vw,2rem)] py-2.25 text-(length:--text-xs) font-medium text-white transition-all duration-200 hover:bg-white/10 hover:text-white focus-visible:bg-white/10 focus-visible:text-white focus-visible:outline-none"
+                onMouseEnter={(e) => movePillTo(e.currentTarget)}
+                onFocus={(e) => movePillTo(e.currentTarget)}
+                className="relative z-10 rounded-full px-[clamp(1rem,2.5vw,2rem)] py-2.25 text-(length:--text-xs) font-medium text-white transition-colors duration-200 hover:text-[var(--hero-accent)] focus-visible:text-[var(--hero-accent)] focus-visible:outline-none"
               >
                 <RandomLetterSwapPingPong
                   label={link.label}

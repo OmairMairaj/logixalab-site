@@ -71,7 +71,7 @@ export default function ContactHero() {
                 href="tel:+925498465186"
                 className="text-[clamp(0.9rem,1.1vw,1.05rem)] font-medium text-(--hero-accent) transition-opacity hover:opacity-85"
               >
-                +92 549 846 5186
+                +92 3302929029
               </a>
             </div>
 

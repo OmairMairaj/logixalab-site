@@ -17,6 +17,20 @@ gsap.registerPlugin(ScrollTrigger);
 export default function SmoothScroll({ children }) {
   useInsertionEffect(() => {
     if (typeof window === "undefined") return undefined;
+
+    /* Always begin a fresh page load at the top. These pages are scroll-driven
+       stories with pinned/scrubbed timelines; the browser's default
+       scrollRestoration:"auto" puts you back mid-scroll on refresh, which leaves
+       ScrollTrigger at a mid-progress frame while the mount-time entrance tweens
+       replay — e.g. the team page's faded-out "scroll to explore" cue blur-rises
+       back in. Manual restoration + scroll-to-top makes refresh restart from the
+       top. Runs once per full load (layout doesn't remount on SPA navigation), so
+       in-app route changes are unaffected; #hash links are still honored. */
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    if (!window.location.hash) window.scrollTo(0, 0);
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return undefined;
     }
